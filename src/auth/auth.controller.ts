@@ -1,18 +1,22 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { UserDto } from 'src/user/dto/user.dto';
+import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { UserLogin } from './interfaces/user-login.interface';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(@Body() userDto: UserDto): Promise<string> {
+  async login(@Body() userLogin: UserLogin): Promise<{ token: string }> {
+    if (!userLogin || !userLogin.username || !userLogin.password) {
+      throw new BadRequestException('Username and password can not be empty');
+    }
+
     const token = await this.authService.login(
-      userDto.username,
-      userDto.password,
+      userLogin.username,
+      userLogin.password,
     );
 
-    return token;
+    return { token: token };
   }
 }

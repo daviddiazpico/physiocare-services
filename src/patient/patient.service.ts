@@ -12,6 +12,7 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdateAvatarPatientDto } from './dto/update-avatar-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class PatientService {
@@ -80,6 +81,17 @@ export class PatientService {
 
   findOne(id: number): Promise<Patient> {
     return this.#checkIfPatientExists(id);
+  }
+
+  /**
+   * Method to search patient by User. I used it in the AuthService to get the patient
+   * associated with the user who logs in, to store their id in the token
+   *
+   * @param user The user associated to the patient
+   * @returns The patient associated with the user received
+   */
+  async findOneByUser(user: User): Promise<Patient> {
+    return (await this.patientsRepository.findOneBy({ user }))!;
   }
 
   async create(

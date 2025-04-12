@@ -18,7 +18,7 @@ import { ImageService } from './commons/image/image.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -28,7 +28,7 @@ import { ImageService } from './commons/image/image.service';
       entities: [User, Patient, Physio, Record, Appointment],
       database: process.env.DB_NAME,
       synchronize: true, // mirar lo de solo desarrollo
-      logging: true,
+      logging: true, // solo en desarrollo mirar tambien
     }),
     PatientModule,
     PhysioModule,

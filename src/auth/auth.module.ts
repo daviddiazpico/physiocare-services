@@ -1,16 +1,24 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { UserModule } from 'src/user/user.module';
 import { JwtModule } from '@nestjs/jwt';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ImageService } from 'src/commons/image/image.service';
+import { Patient } from 'src/patient/entities/patient.entity';
+import { PatientService } from 'src/patient/patient.service';
+import { UserModule } from 'src/user/user.module';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 
 @Module({
-  imports: [UserModule, JwtModule.register({
-    global: true,
-    secret: process.env.JWT_SECRET_WORD,
-    signOptions: { expiresIn: '1h' }
-  })],
+  imports: [
+    UserModule,
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET_WORD,
+      signOptions: { expiresIn: '1h' },
+    }),
+    TypeOrmModule.forFeature([Patient]),
+  ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, PatientService, ImageService],
 })
 export class AuthModule {}

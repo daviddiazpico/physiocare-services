@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,16 +21,21 @@ export class UserService {
     }
   }
 
-  async findOne(username: string, password: string): Promise<User | null> {
-    return await this.usersRepository.findOneBy({
-      username: username,
-      password: await bcrypt.hash(password, 10),
-    });
+  async findOne(username: string, password: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ username: username });
+    if (user) {
+      if (bcrypt.compareSync(password, user.password)) {
+        return user;
+      }
+    }
+    throw new UnauthorizedException('Invalid credentials');
   }
 
   async create(userDto: UserDto): Promise<User> {
     await this.#checkIfUsernameExists(userDto.username);
 
-    return this.usersRepository.save(this.usersRepository.create(userDto));
+    const user = this.usersRepository.create(userDto);
+    user.password = await bcrypt.hash(user.password, 10);
+    return this.usersRepository.save(user);
   }
 }
