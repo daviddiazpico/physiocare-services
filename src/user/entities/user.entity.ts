@@ -11,6 +11,9 @@ export class User {
   @Column({ type: 'varchar', length: 100 })
   password: string;
 
-  @Column({ type: 'enum', enum: ["admin", "physio", "patient"] })
+  @Column({ type: 'enum', enum: ['admin', 'physio', 'patient'] })
   rol: string;
+
+  @Column({ type: 'varchar', length: 250 })
+  firebaseToken: string;
 }

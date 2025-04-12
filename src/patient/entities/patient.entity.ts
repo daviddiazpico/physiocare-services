@@ -1,10 +1,5 @@
 import { Appointment } from 'src/appointment/entities/appointment.entity';
-import {
-  Column,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'patients' })
 export class Patient {
@@ -31,6 +26,12 @@ export class Patient {
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   avatar: string;
+
+  @Column({ type: 'numeric', default: 0 })
+  lat: number;
+
+  @Column({ type: 'numeric', default: 0 })
+  lng: number;
 
   @OneToMany(() => Appointment, (appointment) => appointment.patient, {
     nullable: false,
