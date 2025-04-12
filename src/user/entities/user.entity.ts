@@ -5,7 +5,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 75 })
+  @Column({ type: 'varchar', length: 75, unique: true })
   username: string;
 
   @Column({ type: 'varchar', length: 100 })
@@ -14,6 +14,6 @@ export class User {
   @Column({ type: 'enum', enum: ['admin', 'physio', 'patient'] })
   rol: string;
 
-  @Column({ type: 'varchar', length: 250 })
+  @Column({ type: 'varchar', length: 250, nullable: true })
   firebaseToken: string;
 }

@@ -1,57 +1,140 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreatePatientDto } from './dto/create-patient.dto';
-import { UpdatePatientDto } from './dto/update-patient.dto';
-import { Repository } from 'typeorm';
-import { Patient } from './entities/patient.entity';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ImageService } from 'src/commons/image/image.service';
+import { UserDto } from 'src/user/dto/user.dto';
+import { UserService } from 'src/user/user.service';
+import { Repository } from 'typeorm';
+import { CreatePatientDto } from './dto/create-patient.dto';
+import { UpdateAvatarPatientDto } from './dto/update-avatar-patient.dto';
+import { UpdatePatientDto } from './dto/update-patient.dto';
+import { Patient } from './entities/patient.entity';
 
 @Injectable()
 export class PatientService {
   constructor(
     @InjectRepository(Patient)
     private readonly patientsRepository: Repository<Patient>,
+    private readonly imageService: ImageService,
+    private readonly userService: UserService,
   ) {}
 
-  create(createPatientDto: CreatePatientDto): Promise<Patient> {
-    const newPatient = new Patient();
-    newPatient.name = createPatientDto.name;
-    newPatient.surname = createPatientDto.surname;
-    newPatient.birthdate = createPatientDto.birthdate;
-    newPatient.address = createPatientDto.address;
-    newPatient.insuranceNumber = createPatientDto.insuranceNumber;
-    newPatient.email = createPatientDto.email;
-    newPatient.avatar = createPatientDto.avatar;
-
-    return this.patientsRepository.save(newPatient);
-  }
-
-  findAll(): Promise<Patient[]> {
-    return this.patientsRepository.find();
-  }
-
-  async findOne(id: number): Promise<Patient | null> {
+  async #checkIfPatientExists(id: number): Promise<Patient> {
     const patient = await this.patientsRepository.findOneBy({ id });
     if (!patient) {
-      throw new NotFoundException('Patient not found');
+      throw new NotFoundException(`Patient with id ${id} not found`);
     }
 
     return patient;
   }
 
-  update(id: number, updatePatientDto: UpdatePatientDto) {
-    const updatePatient = new Patient();
-    updatePatient.name = updatePatientDto.name;
-    updatePatient.surname = updatePatientDto.surname;
-    updatePatient.birthdate = updatePatientDto.birthdate;
-    updatePatient.address = updatePatientDto.address;
-    updatePatient.insuranceNumber = updatePatientDto.insuranceNumber;
-    updatePatient.email = updatePatientDto.email;
-    updatePatient.avatar = updatePatientDto.avatar;
+  async #checkIfInsuranceNumberExists(
+    insuranceNumber: string,
+    patientId = 0,
+  ): Promise<void> {
+    const patient = await this.patientsRepository.findOneBy({
+      insuranceNumber,
+    });
+    if (patient && patient.id !== patientId) {
+      throw new BadRequestException(
+        `The insurance number '${insuranceNumber}' is assigned to other patient`,
+      );
+    }
+  }
 
-    return `This action updates a #${id} patient`;
+  async #checkIfEmailExists(email: string, patientId = 0): Promise<void> {
+    const patient = await this.patientsRepository.findOneBy({ email });
+    if (patient && patient.id !== patientId) {
+      throw new BadRequestException(
+        `The email '${email}' is assigned to other patient`,
+      );
+    }
+  }
+
+  async findAll(): Promise<Patient[]> {
+    const patients = await this.patientsRepository.find();
+    if (!patients) {
+      throw new NotFoundException(
+        "There aren't patients registered in the system",
+      );
+    }
+
+    return patients;
+  }
+
+  async findBySurname(surname: string) {
+    const patients = await this.patientsRepository
+      .createQueryBuilder()
+      .where('surname LIKE :surname', { surname: `%${surname}%` })
+      .getMany();
+
+    if (patients.length === 0) {
+      throw new NotFoundException('No patients found');
+    }
+
+    return patients;
+  }
+
+  findOne(id: number): Promise<Patient> {
+    return this.#checkIfPatientExists(id);
+  }
+
+  async create(
+    createPatientDto: CreatePatientDto,
+    userDto: UserDto,
+  ): Promise<Patient> {
+    await this.#checkIfInsuranceNumberExists(createPatientDto.insuranceNumber);
+    await this.#checkIfEmailExists(createPatientDto.email);
+    const user = await this.userService.create(userDto);
+
+    const avatarPath = await this.imageService.saveImage(
+      'patients',
+      createPatientDto.avatar,
+    );
+    const patient = this.patientsRepository.create(createPatientDto);
+    patient.avatar = avatarPath;
+    patient.user = user;
+
+    return await this.patientsRepository.save(patient);
+  }
+
+  async update(id: number, updatePatientDto: UpdatePatientDto) {
+    const patient = await this.#checkIfPatientExists(id);
+    await this.#checkIfInsuranceNumberExists(
+      updatePatientDto.insuranceNumber,
+      updatePatientDto.id,
+    );
+    await this.#checkIfEmailExists(updatePatientDto.email, updatePatientDto.id);
+
+    for (const property in updatePatientDto) {
+      if (property !== 'avatar') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        patient[property] = updatePatientDto[property];
+      }
+    }
+
+    return this.patientsRepository.save(patient);
+  }
+
+  async updateAvatar(id: number, updatePatientDto: UpdateAvatarPatientDto) {
+    const patient = await this.#checkIfPatientExists(id);
+
+    if (updatePatientDto.avatar) {
+      const avatarPath = await this.imageService.saveImage(
+        'patients',
+        updatePatientDto.avatar,
+      );
+      patient.avatar = avatarPath;
+    }
+
+    return this.patientsRepository.save(patient);
   }
 
   async remove(id: number): Promise<void> {
+    await this.#checkIfPatientExists(id);
     await this.patientsRepository.delete(id);
   }
 }

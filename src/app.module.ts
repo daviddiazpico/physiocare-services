@@ -14,6 +14,7 @@ import { AppointmentModule } from './appointment/appointment.module';
 import { Appointment } from './appointment/entities/appointment.entity';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { ImageService } from './commons/image/image.service';
 
 @Module({
   imports: [
@@ -37,6 +38,6 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ImageService],
 })
 export class AppModule {}

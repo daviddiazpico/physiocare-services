@@ -1,5 +1,13 @@
 import { Appointment } from 'src/appointment/entities/appointment.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({ name: 'physios' })
 export class Physio {
@@ -27,12 +35,18 @@ export class Physio {
   @Column({ type: 'varchar', length: 100, nullable: true })
   avatar: string;
 
-  @Column({ type: 'numeric', default: 0 })
+  @Column({ type: 'numeric' })
   lat: number;
 
-  @Column({ type: 'numeric', default: 0 })
+  @Column({ type: 'numeric' })
   lng: number;
 
-  @OneToMany(() => Appointment, (appointment) => appointment.physio, { nullable: false })
+  @OneToMany(() => Appointment, (appointment) => appointment.physio, {
+    nullable: false,
+  })
   appointments: Appointment[];
+
+  @OneToOne(() => User, { nullable: false })
+  @JoinColumn()
+  user: User;
 }
