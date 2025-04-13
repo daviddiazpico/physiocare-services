@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { IsNumber } from 'class-validator';
 import { CreatePhysioDto } from './create-physio.dto';
 
-export class UpdatePhysioDto extends PartialType(CreatePhysioDto) {}
+export class UpdatePhysioDto extends CreatePhysioDto {
+    @IsNumber({}, { message: 'ID must be a number' })
+    id: number
+}

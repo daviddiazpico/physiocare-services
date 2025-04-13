@@ -32,8 +32,8 @@ export class CreatePatientDto {
   })
   surname: string;
 
-  @IsNotEmpty({ message: 'Date can not be empty' })
-  @IsDateString({}, { message: 'Date do not have a date format' })
+  @IsNotEmpty({ message: 'Birthdate can not be empty' })
+  @IsDateString({}, { message: 'Birthdate do not have a date format' })
   birthdate: Date;
 
   @IsString({ message: 'Address must be a string' })
@@ -58,7 +58,8 @@ export class CreatePatientDto {
   email: string;
 
   @IsBase64({}, { message: 'Avatar must be encoded in base 64' })
-  avatar: string;
+  @IsOptional()
+  avatar?: string;
 
   @IsNumber({}, { message: 'Latitude must be a number' })
   @IsOptional()

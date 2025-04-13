@@ -15,11 +15,12 @@ export class UserDto {
   })
   readonly password: string;
 
-  @IsNotEmpty({ message: 'username can not be empty' })
-  @IsString({ message: 'Username must be a string' })
+  @IsNotEmpty({ message: 'Rol can not be empty' })
+  @IsString({ message: 'Rol must be a string' })
   @IsEnum(['admin', 'physio', 'patient'], {
     message: 'Rol must have one of these values [admin, physio, patient]',
   })
   readonly rol: string;
+  
   readonly firebaseToken: string;
 }

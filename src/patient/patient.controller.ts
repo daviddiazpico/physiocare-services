@@ -9,26 +9,27 @@ import {
   Put,
   Query,
   UseGuards,
-  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { AppointmentService } from 'src/appointment/appointment.service';
+import { CreateAppointmentDto } from 'src/appointment/dto/create-appointment.dto';
 import { PersonId } from 'src/shared/decorators/person-id.decorator';
+import { AuthGuard } from 'src/shared/guards/auth.guard';
 import { UserDto } from 'src/user/dto/user.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
 import { PatientService } from './patient.service';
-import { AuthGuard } from 'src/shared/guards/auth.guard';
-import { ImageInterceptor } from 'src/shared/interceptors/image.interceptor';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
 
 @Controller('patients')
-@UseInterceptors(ImageInterceptor)
+@UseGuards(AuthGuard)
+// @UseInterceptors(ImageInterceptor) mirar donde poner si en tdo el controller o endpoints especificos
 export class PatientController {
   constructor(
     private readonly patientService: PatientService,
-    private readonly jwtService: JwtService,
+    private readonly appointmentService: AppointmentService,
   ) {}
 
   @Get()
@@ -37,9 +38,8 @@ export class PatientController {
   }
 
   @Get('me')
-  @UseGuards(AuthGuard)
-  findMe(@PersonId() id: number) {
-    return this.patientService.findOne(id);
+  findMe(@PersonId() patientId: number) {
+    return this.patientService.findOne(patientId);
   }
 
   @Get('find')
@@ -66,7 +66,17 @@ export class PatientController {
     @Body('user') userDto: UserDto,
     @Body('patient') createPatientDto: CreatePatientDto,
   ): Promise<Patient> {
-    return this.patientService.create(createPatientDto, userDto);
+    return await this.patientService.create(createPatientDto, userDto);
+  }
+
+  @Post('appointments')
+  @UsePipes(ValidationPipe)
+  async createAppointment(
+    @PersonId() patientId: number,
+    @Body() createAppointmentDto: CreateAppointmentDto,
+  ): Promise<Appointment> {
+    const patient = await this.patientService.findOne(patientId);
+    return this.appointmentService.create(createAppointmentDto, patient);
   }
 
   @Put(':id')

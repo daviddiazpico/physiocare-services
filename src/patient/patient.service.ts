@@ -94,6 +94,10 @@ export class PatientService {
     return (await this.patientsRepository.findOneBy({ user }))!;
   }
 
+  // revisar la transacion aqui, ya que si peta conexion o algo asi 
+  // podria guardarse un usuario y no el patient
+  // posible pruaba poner los campos lat lng sin default, para que sea null 
+  // cuando se inserte, pero el user ya estara
   async create(
     createPatientDto: CreatePatientDto,
     userDto: UserDto,
@@ -102,15 +106,19 @@ export class PatientService {
     await this.#checkIfEmailExists(createPatientDto.email);
     const user = await this.userService.create(userDto);
 
-    const avatarPath = await this.imageService.saveImage(
-      'patients',
-      createPatientDto.avatar,
-    );
+    let avatarPath = 'images/patients/patient_default.jpg';
+    if (createPatientDto.avatar) {
+      avatarPath = await this.imageService.saveImage(
+        'patients',
+        createPatientDto.avatar,
+      );
+    }
+    
     const patient = this.patientsRepository.create(createPatientDto);
     patient.avatar = avatarPath;
     patient.user = user;
 
-    return await this.patientsRepository.save(patient);
+    return this.patientsRepository.save(patient);
   }
 
   async update(id: number, updatePatientDto: UpdatePatientDto) {

@@ -1,16 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { PhysioService } from './physio.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { CreatePhysioDto } from './dto/create-physio.dto';
 import { UpdatePhysioDto } from './dto/update-physio.dto';
+import { PhysioService } from './physio.service';
+import { AuthGuard } from 'src/shared/guards/auth.guard';
+import { UserDto } from 'src/user/dto/user.dto';
 
-@Controller('physio')
+@Controller('physios')
+@UseGuards(AuthGuard)
 export class PhysioController {
   constructor(private readonly physioService: PhysioService) {}
-
-  @Post()
-  create(@Body() createPhysioDto: CreatePhysioDto) {
-    return this.physioService.create(createPhysioDto);
-  }
 
   @Get()
   findAll() {
@@ -22,7 +31,17 @@ export class PhysioController {
     return this.physioService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Post()
+  @UsePipes(ValidationPipe)
+  create(
+    @Body('user') userDto: UserDto,
+    @Body('physio') createPhysioDto: CreatePhysioDto,
+  ) {
+    return this.physioService.create(createPhysioDto, userDto);
+  }
+
+  @Put(':id')
+  @UsePipes(ValidationPipe)
   update(@Param('id') id: string, @Body() updatePhysioDto: UpdatePhysioDto) {
     return this.physioService.update(+id, updatePhysioDto);
   }
