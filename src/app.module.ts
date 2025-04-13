@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PatientModule } from './patient/patient.module';
-import { PhysioModule } from './physio/physio.module';
-import { RecordModule } from './record/record.module';
-import { UserModule } from './user/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Patient } from './patient/entities/patient.entity';
-import { Physio } from './physio/entities/physio.entity';
-import { Record } from './record/entities/record.entity';
-import { User } from './user/entities/user.entity';
 import { AppointmentModule } from './appointment/appointment.module';
 import { Appointment } from './appointment/entities/appointment.entity';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
-import { ImageService } from './commons/image/image.service';
+import { ImageService } from './shared/services/image.service';
+import { Patient } from './patient/entities/patient.entity';
+import { PatientModule } from './patient/patient.module';
+import { Physio } from './physio/entities/physio.entity';
+import { PhysioModule } from './physio/physio.module';
+import { Record } from './record/entities/record.entity';
+import { RecordModule } from './record/record.module';
+import { User } from './user/entities/user.entity';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [

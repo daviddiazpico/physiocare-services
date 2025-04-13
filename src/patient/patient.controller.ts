@@ -8,22 +8,38 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { PersonId } from 'src/shared/decorators/person-id.decorator';
 import { UserDto } from 'src/user/dto/user.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
 import { PatientService } from './patient.service';
+import { AuthGuard } from 'src/shared/guards/auth.guard';
+import { ImageInterceptor } from 'src/shared/interceptors/image.interceptor';
 
 @Controller('patients')
+@UseInterceptors(ImageInterceptor)
 export class PatientController {
-  constructor(private readonly patientService: PatientService) {}
+  constructor(
+    private readonly patientService: PatientService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   @Get()
   findAll() {
     return this.patientService.findAll();
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard)
+  findMe(@PersonId() id: number) {
+    return this.patientService.findOne(id);
   }
 
   @Get('find')

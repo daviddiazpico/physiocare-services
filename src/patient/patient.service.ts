@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ImageService } from 'src/commons/image/image.service';
+import { ImageService } from 'src/shared/services/image.service';
 import { UserDto } from 'src/user/dto/user.dto';
 import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
@@ -123,7 +123,6 @@ export class PatientService {
 
     for (const property in updatePatientDto) {
       if (property !== 'avatar') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         patient[property] = updatePatientDto[property];
       }
     }

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ImageService } from 'src/commons/image/image.service';
+import { ImageService } from 'src/shared/services/image.service';
 import { Patient } from 'src/patient/entities/patient.entity';
 import { PatientService } from 'src/patient/patient.service';
 import { UserModule } from 'src/user/user.module';
