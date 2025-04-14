@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -26,6 +28,17 @@ export class PhysioController {
     return this.physioService.findAll();
   }
 
+  @Get('find')
+  findBySpecialty(@Query('specialty') specialty: string) {
+    if (!specialty) {
+      throw new BadRequestException(
+        'Specialty parameter is required and can not be empty',
+      );
+    }
+
+    return this.physioService.findBySpecialty(specialty);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.physioService.findOne(+id);
@@ -43,11 +56,17 @@ export class PhysioController {
   @Put(':id')
   @UsePipes(ValidationPipe)
   update(@Param('id') id: string, @Body() updatePhysioDto: UpdatePhysioDto) {
+    if (!id.match(/^\d+$/)) {
+      throw new BadRequestException('ID must be a number');
+    }
     return this.physioService.update(+id, updatePhysioDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
+    if (!id.match(/^\d+$/)) {
+      throw new BadRequestException('ID must be a number');
+    }
     return this.physioService.remove(+id);
   }
 }

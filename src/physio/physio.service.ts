@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePhysioDto } from './dto/create-physio.dto';
 import { UpdatePhysioDto } from './dto/update-physio.dto';
 import { UserDto } from 'src/user/dto/user.dto';
@@ -7,6 +11,7 @@ import { Physio } from './entities/physio.entity';
 import { Repository } from 'typeorm';
 import { ImageService } from 'src/shared/services/image.service';
 import { UserService } from 'src/user/user.service';
+import { UpdateAvatarPhysioDto } from './dto/update-avatar-physio.dto';
 
 @Injectable()
 export class PhysioService {
@@ -46,8 +51,28 @@ export class PhysioService {
     }
   }
 
-  findAll() {
-    return `This action returns all physio`;
+  async findAll(): Promise<Physio[]> {
+    const physios = await this.physioRepository.find();
+    if (!physios) {
+      throw new NotFoundException(
+        "There aren't physios registered in the system",
+      );
+    }
+
+    return physios;
+  }
+
+  async findBySpecialty(specialty: string): Promise<Physio[]> {
+    const physios = await this.physioRepository
+      .createQueryBuilder()
+      .where('specialty = :specialty', { specialty: specialty })
+      .getMany();
+
+    if (physios.length === 0) {
+      throw new NotFoundException('No physios found');
+    }
+
+    return physios;
   }
 
   findOne(id: number): Promise<Physio> {
@@ -77,11 +102,43 @@ export class PhysioService {
     return this.physioRepository.save(physio);
   }
 
-  update(id: number, updatePhysioDto: UpdatePhysioDto) {
-    return `This action updates a #${id} physio`;
+  async update(id: number, updatePhysioDto: UpdatePhysioDto): Promise<Physio> {
+    const physio = await this.#checkIfPhysioExists(id);
+    await this.#checkIfLicenseNumberExists(
+      updatePhysioDto.licenseNumber,
+      updatePhysioDto.id,
+    );
+    await this.#checkIfEmailExists(updatePhysioDto.email, updatePhysioDto.id);
+
+    for (const property in updatePhysioDto) {
+      if (property !== 'avatar') {
+        physio[property] = updatePhysioDto[property];
+      }
+    }
+
+    return this.physioRepository.save(physio);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} physio`;
+  // falta el endpoitn de update avatar en patient y physio
+  async updateAvatar(
+    id: number,
+    updateAvatarPhysioDto: UpdateAvatarPhysioDto,
+  ): Promise<string> {
+    const patient = await this.#checkIfPhysioExists(id);
+
+    if (updateAvatarPhysioDto.avatar) {
+      const avatarPath = await this.imageService.saveImage(
+        'physios',
+        updateAvatarPhysioDto.avatar,
+      );
+      patient.avatar = avatarPath;
+    }
+
+    return (await this.physioRepository.save(patient)).avatar;
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.#checkIfPhysioExists(id);
+    await this.physioRepository.delete(id);
   }
 }

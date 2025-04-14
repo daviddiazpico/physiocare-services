@@ -66,7 +66,7 @@ export class PatientService {
     return patients;
   }
 
-  async findBySurname(surname: string) {
+  async findBySurname(surname: string): Promise<Patient[]> {
     const patients = await this.patientsRepository
       .createQueryBuilder()
       .where('surname LIKE :surname', { surname: `%${surname}%` })
@@ -94,9 +94,9 @@ export class PatientService {
     return (await this.patientsRepository.findOneBy({ user }))!;
   }
 
-  // revisar la transacion aqui, ya que si peta conexion o algo asi 
+  // revisar la transacion aqui, ya que si peta conexion o algo asi
   // podria guardarse un usuario y no el patient
-  // posible pruaba poner los campos lat lng sin default, para que sea null 
+  // posible pruaba poner los campos lat lng sin default, para que sea null
   // cuando se inserte, pero el user ya estara
   async create(
     createPatientDto: CreatePatientDto,
@@ -113,7 +113,7 @@ export class PatientService {
         createPatientDto.avatar,
       );
     }
-    
+
     const patient = this.patientsRepository.create(createPatientDto);
     patient.avatar = avatarPath;
     patient.user = user;
@@ -138,18 +138,22 @@ export class PatientService {
     return this.patientsRepository.save(patient);
   }
 
-  async updateAvatar(id: number, updatePatientDto: UpdateAvatarPatientDto) {
+  // falta el endpoitn de update avatar en patient y physio
+  async updateAvatar(
+    id: number,
+    updateAvatarPatientDto: UpdateAvatarPatientDto,
+  ): Promise<string> {
     const patient = await this.#checkIfPatientExists(id);
 
-    if (updatePatientDto.avatar) {
+    if (updateAvatarPatientDto.avatar) {
       const avatarPath = await this.imageService.saveImage(
         'patients',
-        updatePatientDto.avatar,
+        updateAvatarPatientDto.avatar,
       );
       patient.avatar = avatarPath;
     }
 
-    return this.patientsRepository.save(patient);
+    return (await this.patientsRepository.save(patient)).avatar;
   }
 
   async remove(id: number): Promise<void> {

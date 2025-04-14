@@ -55,7 +55,7 @@ export class PatientController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     if (!id.match(/^\d+$/)) {
-      throw new BadRequestException('id must be a number');
+      throw new BadRequestException('ID must be a number');
     }
     return this.patientService.findOne(+id);
   }
@@ -83,7 +83,7 @@ export class PatientController {
   @UsePipes(ValidationPipe)
   update(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
     if (!id.match(/^\d+$/)) {
-      throw new BadRequestException('id must be a number');
+      throw new BadRequestException('ID must be a number');
     }
     return this.patientService.update(+id, updatePatientDto);
   }
@@ -91,7 +91,7 @@ export class PatientController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     if (!id.match(/^\d+$/)) {
-      throw new BadRequestException('id must be a number');
+      throw new BadRequestException('ID must be a number');
     }
     return this.patientService.remove(+id);
   }
