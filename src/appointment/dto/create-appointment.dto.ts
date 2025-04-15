@@ -35,6 +35,10 @@ export class CreateAppointmentDto {
   })
   observations: string;
 
+  @IsNotEmpty({ message: 'Patient id can not be empty' })
+  @IsNumber({}, { message: 'Patient id must be a number' })
+  patientId: number;
+
   @IsNotEmpty({ message: 'Physio id can not be empty' })
   @IsNumber({}, { message: 'Physio id must be a number' })
   physioId: number;

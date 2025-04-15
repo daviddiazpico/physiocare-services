@@ -12,18 +12,15 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { AppointmentService } from 'src/appointment/appointment.service';
-import { CreateAppointmentDto } from 'src/appointment/dto/create-appointment.dto';
-import { Appointment } from 'src/appointment/entities/appointment.entity';
 import { PersonId } from 'src/shared/decorators/person-id.decorator';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
+import { checkIfIdIsValid } from 'src/shared/utils/utils';
 import { UserDto } from 'src/user/dto/user.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdateAvatarPatientDto } from './dto/update-avatar-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
 import { PatientService } from './patient.service';
-import { checkIfIdIsValid } from 'src/shared/utils/utils';
 
 @Controller('patients')
 @UseGuards(AuthGuard)
@@ -31,7 +28,6 @@ import { checkIfIdIsValid } from 'src/shared/utils/utils';
 export class PatientController {
   constructor(
     private readonly patientService: PatientService,
-    private readonly appointmentService: AppointmentService,
   ) {}
 
   @Get()
@@ -67,16 +63,6 @@ export class PatientController {
     @Body('patient') createPatientDto: CreatePatientDto,
   ): Promise<Patient> {
     return await this.patientService.create(createPatientDto, userDto);
-  }
-
-  @Post('me/appointments')
-  @UsePipes(ValidationPipe)
-  async createAppointment(
-    @PersonId() patientId: number,
-    @Body() createAppointmentDto: CreateAppointmentDto,
-  ): Promise<Appointment> {
-    const patient = await this.patientService.findOne(patientId);
-    return this.appointmentService.create(createAppointmentDto, patient);
   }
 
   @Put(':id')

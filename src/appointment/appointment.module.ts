@@ -10,13 +10,16 @@ import { ImageService } from 'src/shared/services/image.service';
 import { RecordService } from 'src/record/record.service';
 import { AppointmentController } from './appointment.controller';
 import { Record } from 'src/record/entities/record.entity';
+import { PatientService } from 'src/patient/patient.service';
+import { Patient } from 'src/patient/entities/patient.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Appointment, User, Physio, Record])],
+  imports: [TypeOrmModule.forFeature([Appointment, User, Patient, Physio, Record])],
   controllers: [AppointmentController],
   providers: [
     AppointmentService,
     PhysioService,
+    PatientService,
     UserService,
     ImageService,
     RecordService,

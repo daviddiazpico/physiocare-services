@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Patient } from 'src/patient/entities/patient.entity';
 import { PhysioService } from 'src/physio/physio.service';
+import { RecordService } from 'src/record/record.service';
 import { Repository } from 'typeorm';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { Appointment } from './entities/appointment.entity';
-import { RecordService } from 'src/record/record.service';
+import { PatientService } from 'src/patient/patient.service';
 
 @Injectable()
 export class AppointmentService {
@@ -13,15 +13,18 @@ export class AppointmentService {
     @InjectRepository(Appointment)
     private readonly appointmentsRepository: Repository<Appointment>,
     private readonly physioService: PhysioService,
+    private readonly patientService: PatientService,
     private readonly recordService: RecordService,
   ) {}
 
   async create(
     createAppointmentDto: CreateAppointmentDto,
-    patient: Patient,
   ): Promise<Appointment> {
     const physio = await this.physioService.findOne(
       createAppointmentDto.physioId,
+    );
+    const patient = await this.patientService.findOne(
+      createAppointmentDto.patientId,
     );
 
     const appointment =

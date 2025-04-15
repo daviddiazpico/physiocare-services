@@ -1,21 +1,19 @@
 import { Module } from '@nestjs/common';
-import { PatientService } from './patient.service';
-import { PatientController } from './patient.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Patient } from './entities/patient.entity';
-import { ImageService } from 'src/shared/services/image.service';
-import { UserService } from 'src/user/user.service';
-import { User } from 'src/user/entities/user.entity';
-import { AppointmentService } from 'src/appointment/appointment.service';
-import { Appointment } from 'src/appointment/entities/appointment.entity';
-import { PhysioService } from 'src/physio/physio.service';
 import { Physio } from 'src/physio/entities/physio.entity';
-import { RecordService } from 'src/record/record.service';
+import { PhysioService } from 'src/physio/physio.service';
 import { Record } from 'src/record/entities/record.entity';
+import { RecordService } from 'src/record/record.service';
+import { ImageService } from 'src/shared/services/image.service';
+import { User } from 'src/user/entities/user.entity';
+import { UserService } from 'src/user/user.service';
+import { Patient } from './entities/patient.entity';
+import { PatientController } from './patient.controller';
+import { PatientService } from './patient.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Patient, User, Appointment, Physio, Record])],
+  imports: [TypeOrmModule.forFeature([Patient, User, Physio, Record])],
   controllers: [PatientController],
-  providers: [PatientService, ImageService, UserService, AppointmentService, PhysioService, RecordService],
+  providers: [PatientService, ImageService, UserService, PhysioService, RecordService],
 })
 export class PatientModule {}
