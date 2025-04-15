@@ -3,15 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreatePhysioDto } from './dto/create-physio.dto';
-import { UpdatePhysioDto } from './dto/update-physio.dto';
-import { UserDto } from 'src/user/dto/user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Physio } from './entities/physio.entity';
-import { Repository } from 'typeorm';
 import { ImageService } from 'src/shared/services/image.service';
+import { UserDto } from 'src/user/dto/user.dto';
 import { UserService } from 'src/user/user.service';
+import { Repository } from 'typeorm';
+import { CreatePhysioDto } from './dto/create-physio.dto';
 import { UpdateAvatarPhysioDto } from './dto/update-avatar-physio.dto';
+import { UpdatePhysioDto } from './dto/update-physio.dto';
+import { Physio } from './entities/physio.entity';
 
 @Injectable()
 export class PhysioService {
@@ -104,11 +104,8 @@ export class PhysioService {
 
   async update(id: number, updatePhysioDto: UpdatePhysioDto): Promise<Physio> {
     const physio = await this.#checkIfPhysioExists(id);
-    await this.#checkIfLicenseNumberExists(
-      updatePhysioDto.licenseNumber,
-      updatePhysioDto.id,
-    );
-    await this.#checkIfEmailExists(updatePhysioDto.email, updatePhysioDto.id);
+    await this.#checkIfLicenseNumberExists(updatePhysioDto.licenseNumber, id);
+    await this.#checkIfEmailExists(updatePhysioDto.email, id);
 
     for (const property in updatePhysioDto) {
       if (property !== 'avatar') {

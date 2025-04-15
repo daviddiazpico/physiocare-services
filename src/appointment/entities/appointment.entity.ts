@@ -21,9 +21,12 @@ export class Appointment {
   observations: string;
 
   @Column({ type: 'boolean', default: false })
-  confirmed: string;
+  confirmed: boolean;
 
-  @ManyToOne(() => Patient, (patient) => patient.appointments, { nullable: false })
+  @ManyToOne(() => Patient, (patient) => patient.appointments, {
+    nullable: false,
+    lazy: true,
+  })
   patient: Patient;
 
   @ManyToOne(() => Physio, (physio) => physio.appointments, { nullable: false })

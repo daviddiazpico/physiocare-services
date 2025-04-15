@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { Appointment } from './entities/appointment.entity';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { Patient } from 'src/patient/entities/patient.entity';
 import { PhysioService } from 'src/physio/physio.service';
+import { Repository } from 'typeorm';
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { Appointment } from './entities/appointment.entity';
+import { RecordService } from 'src/record/record.service';
 
 @Injectable()
 export class AppointmentService {
@@ -12,6 +13,7 @@ export class AppointmentService {
     @InjectRepository(Appointment)
     private readonly appointmentsRepository: Repository<Appointment>,
     private readonly physioService: PhysioService,
+    private readonly recordService: RecordService,
   ) {}
 
   async create(
@@ -22,10 +24,27 @@ export class AppointmentService {
       createAppointmentDto.physioId,
     );
 
-    const appointment = this.appointmentsRepository.create(createAppointmentDto);
+    const appointment =
+      this.appointmentsRepository.create(createAppointmentDto);
     appointment.physio = physio;
     appointment.patient = patient;
 
     return await this.appointmentsRepository.save(appointment);
+  }
+
+  async confirmAppointment(id: number): Promise<void> {
+    const appointment = await this.appointmentsRepository.findOneBy({ id });
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    const patientRecord = await this.recordService.findOne(
+      appointment.patient.id,
+    );
+
+    appointment.record = patientRecord;
+    appointment.confirmed = true;
+
+    await this.appointmentsRepository.save(appointment);
   }
 }

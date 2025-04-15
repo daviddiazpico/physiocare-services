@@ -125,9 +125,9 @@ export class PatientService {
     const patient = await this.#checkIfPatientExists(id);
     await this.#checkIfInsuranceNumberExists(
       updatePatientDto.insuranceNumber,
-      updatePatientDto.id,
+      id,
     );
-    await this.#checkIfEmailExists(updatePatientDto.email, updatePatientDto.id);
+    await this.#checkIfEmailExists(updatePatientDto.email, id);
 
     for (const property in updatePatientDto) {
       if (property !== 'avatar') {
