@@ -17,6 +17,14 @@ export class AppointmentService {
     private readonly recordService: RecordService,
   ) {}
 
+  private async checkIfAppointmentExists(id: number): Promise<Appointment> {
+    const record = await this.appointmentsRepository.findOneBy({ id });
+    if (!record) {
+      throw new NotFoundException('Appointment not found');
+    }
+    return record;
+  }
+
   async create(
     createAppointmentDto: CreateAppointmentDto,
   ): Promise<Appointment> {
@@ -49,5 +57,10 @@ export class AppointmentService {
     appointment.confirmed = true;
 
     await this.appointmentsRepository.save(appointment);
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.checkIfAppointmentExists(id);
+    await this.appointmentsRepository.delete(id);
   }
 }

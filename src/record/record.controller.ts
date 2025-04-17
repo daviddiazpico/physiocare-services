@@ -1,16 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { RecordService } from './record.service';
-import { CreateRecordDto } from './dto/create-record.dto';
+import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
 import { UpdateRecordDto } from './dto/update-record.dto';
+import { RecordService } from './record.service';
+import { checkIfIdIsValid } from 'src/shared/utils/utils';
 
-@Controller('record')
+@Controller('records')
 export class RecordController {
   constructor(private readonly recordService: RecordService) {}
-
-  @Post()
-  create(@Body() createRecordDto: CreateRecordDto) {
-    return this.recordService.create(createRecordDto);
-  }
 
   @Get()
   findAll() {
@@ -19,16 +14,24 @@ export class RecordController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
+    checkIfIdIsValid(id);
     return this.recordService.findOne(+id);
   }
 
-  @Patch(':id')
+  // @Post()
+  // create(@Body() createRecordDto: CreateRecordDto) {
+  //   return this.recordService.create(createRecordDto);
+  // }
+
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateRecordDto: UpdateRecordDto) {
+    checkIfIdIsValid(id);
     return this.recordService.update(+id, updateRecordDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
+    checkIfIdIsValid(id);
     return this.recordService.remove(+id);
   }
 }

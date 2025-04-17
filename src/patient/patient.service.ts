@@ -4,15 +4,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { RecordService } from 'src/record/record.service';
 import { ImageService } from 'src/shared/services/image.service';
 import { UserDto } from 'src/user/dto/user.dto';
+import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdateAvatarPatientDto } from './dto/update-avatar-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
-import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class PatientService {
@@ -21,18 +22,19 @@ export class PatientService {
     private readonly patientsRepository: Repository<Patient>,
     private readonly imageService: ImageService,
     private readonly userService: UserService,
+    private readonly recordService: RecordService,
   ) {}
 
-  async #checkIfPatientExists(id: number): Promise<Patient> {
+  async checkIfPatientExists(id: number): Promise<Patient> {
     const patient = await this.patientsRepository.findOneBy({ id });
     if (!patient) {
-      throw new NotFoundException(`Patient with id ${id} not found`);
+      throw new NotFoundException('Patient not found');
     }
 
     return patient;
   }
 
-  async #checkIfInsuranceNumberExists(
+  private async checkIfInsuranceNumberExists(
     insuranceNumber: string,
     patientId = 0,
   ): Promise<void> {
@@ -46,7 +48,10 @@ export class PatientService {
     }
   }
 
-  async #checkIfEmailExists(email: string, patientId = 0): Promise<void> {
+  private async checkIfEmailExists(
+    email: string,
+    patientId = 0,
+  ): Promise<void> {
     const patient = await this.patientsRepository.findOneBy({ email });
     if (patient && patient.id !== patientId) {
       throw new BadRequestException(
@@ -80,7 +85,7 @@ export class PatientService {
   }
 
   findOne(id: number): Promise<Patient> {
-    return this.#checkIfPatientExists(id);
+    return this.checkIfPatientExists(id);
   }
 
   /**
@@ -102,8 +107,8 @@ export class PatientService {
     createPatientDto: CreatePatientDto,
     userDto: UserDto,
   ): Promise<Patient> {
-    await this.#checkIfInsuranceNumberExists(createPatientDto.insuranceNumber);
-    await this.#checkIfEmailExists(createPatientDto.email);
+    await this.checkIfInsuranceNumberExists(createPatientDto.insuranceNumber);
+    await this.checkIfEmailExists(createPatientDto.email);
     const user = await this.userService.create(userDto);
 
     let avatarPath = 'images/patients/patient_default.jpg';
@@ -118,16 +123,18 @@ export class PatientService {
     patient.avatar = avatarPath;
     patient.user = user;
 
-    return this.patientsRepository.save(patient);
+    const patientSaved = await this.patientsRepository.save(patient);
+    await this.recordService.create(patientSaved);
+    return patientSaved;
   }
 
   async update(id: number, updatePatientDto: UpdatePatientDto) {
-    const patient = await this.#checkIfPatientExists(id);
-    await this.#checkIfInsuranceNumberExists(
+    const patient = await this.checkIfPatientExists(id);
+    await this.checkIfInsuranceNumberExists(
       updatePatientDto.insuranceNumber,
       id,
     );
-    await this.#checkIfEmailExists(updatePatientDto.email, id);
+    await this.checkIfEmailExists(updatePatientDto.email, id);
 
     for (const property in updatePatientDto) {
       if (property !== 'avatar') {
@@ -143,7 +150,7 @@ export class PatientService {
     id: number,
     updateAvatarPatientDto: UpdateAvatarPatientDto,
   ): Promise<string> {
-    const patient = await this.#checkIfPatientExists(id);
+    const patient = await this.checkIfPatientExists(id);
 
     if (updateAvatarPatientDto.avatar) {
       const avatarPath = await this.imageService.saveImage(
@@ -157,7 +164,7 @@ export class PatientService {
   }
 
   async remove(id: number): Promise<void> {
-    await this.#checkIfPatientExists(id);
+    await this.checkIfPatientExists(id);
     await this.patientsRepository.delete(id);
   }
 }

@@ -32,7 +32,7 @@ export class Physio {
   @Column({ type: 'varchar', length: 75, unique: true })
   email: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: 'varchar', length: 100 })
   avatar: string;
 
   @Column({ type: 'numeric', default: 0 })

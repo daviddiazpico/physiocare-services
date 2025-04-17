@@ -7,7 +7,7 @@ export class Record {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 1000 })
+  @Column({ type: 'varchar', length: 1000, default: '' })
   medicalRecord: string;
 
   @OneToOne(() => Patient, { nullable: false })

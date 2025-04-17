@@ -58,11 +58,11 @@ export class PatientController {
 
   @Post()
   @UsePipes(ValidationPipe)
-  async create(
+  create(
     @Body('user') userDto: UserDto,
     @Body('patient') createPatientDto: CreatePatientDto,
   ): Promise<Patient> {
-    return await this.patientService.create(createPatientDto, userDto);
+    return this.patientService.create(createPatientDto, userDto);
   }
 
   @Put(':id')

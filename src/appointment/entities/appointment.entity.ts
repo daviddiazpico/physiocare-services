@@ -17,7 +17,7 @@ export class Appointment {
   @Column({ type: 'varchar', length: 150 })
   treatment: string;
 
-  @Column({ type: 'varchar', length: 500, nullable: true })
+  @Column({ type: 'varchar', length: 500, default: '' })
   observations: string;
 
   @Column({ type: 'boolean', default: false })

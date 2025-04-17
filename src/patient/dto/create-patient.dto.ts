@@ -40,7 +40,8 @@ export class CreatePatientDto {
   @MaxLength(100, {
     message: 'Address length must be lower or equals than 100 characters',
   })
-  address: string;
+  @IsOptional()
+  address?: string;
 
   @IsNotEmpty({ message: 'Insurance number can not be empty' })
   @IsString({ message: 'Insurance number must be a string' })

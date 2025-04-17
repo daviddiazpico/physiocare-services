@@ -2,6 +2,7 @@ import {
   IsDateString,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   MaxLength,
   MinLength,
@@ -33,7 +34,8 @@ export class CreateAppointmentDto {
   @MaxLength(500, {
     message: 'Diagnosis length must be lower or equals than 500 characters',
   })
-  observations: string;
+  @IsOptional()
+  observations?: string;
 
   @IsNotEmpty({ message: 'Patient id can not be empty' })
   @IsNumber({}, { message: 'Patient id must be a number' })

@@ -23,7 +23,7 @@ export class Patient {
   @Column({ type: 'date' })
   birthdate: Date;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: 'varchar', length: 100, default: '' })
   address: string;
 
   @Column({ type: 'varchar', length: 9, unique: true })
@@ -32,7 +32,7 @@ export class Patient {
   @Column({ type: 'varchar', length: 75, unique: true })
   email: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: 'varchar', length: 100 })
   avatar: string;
 
   @Column({ type: 'numeric', default: 0 })

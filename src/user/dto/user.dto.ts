@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UserDto {
   @IsNotEmpty({ message: 'Username can not be empty' })
@@ -22,5 +22,6 @@ export class UserDto {
   })
   readonly rol: string;
   
-  readonly firebaseToken: string;
+  @IsOptional()
+  readonly firebaseToken?: string;
 }
