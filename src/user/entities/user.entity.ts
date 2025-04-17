@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { UserDto } from '../dto/user.dto';
 
 @Entity({ name: 'users' })
 export class User {
@@ -16,4 +17,13 @@ export class User {
 
   @Column({ type: 'varchar', length: 250, nullable: true })
   firebaseToken: string;
+
+  static fromDto(userDto: UserDto): User {
+    const user = new User();
+    user.username = userDto.username;
+    user.password = userDto.password;
+    user.rol = userDto.rol;
+    user.firebaseToken = userDto.firebaseToken ?? '';
+    return user;
+  }
 }

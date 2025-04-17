@@ -1,15 +1,17 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RecordService } from 'src/record/record.service';
+import * as bcrypt from 'bcrypt';
+import { Record } from 'src/record/entities/record.entity';
 import { ImageService } from 'src/shared/services/image.service';
 import { UserDto } from 'src/user/dto/user.dto';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdateAvatarPatientDto } from './dto/update-avatar-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
@@ -22,7 +24,7 @@ export class PatientService {
     private readonly patientsRepository: Repository<Patient>,
     private readonly imageService: ImageService,
     private readonly userService: UserService,
-    private readonly recordService: RecordService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async checkIfPatientExists(id: number): Promise<Patient> {
@@ -107,25 +109,44 @@ export class PatientService {
     createPatientDto: CreatePatientDto,
     userDto: UserDto,
   ): Promise<Patient> {
+    await this.userService.checkIfUsernameExists(userDto.username);
     await this.checkIfInsuranceNumberExists(createPatientDto.insuranceNumber);
     await this.checkIfEmailExists(createPatientDto.email);
-    const user = await this.userService.create(userDto);
 
-    let avatarPath = 'images/patients/patient_default.jpg';
-    if (createPatientDto.avatar) {
-      avatarPath = await this.imageService.saveImage(
-        'patients',
-        createPatientDto.avatar,
-      );
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const user = User.fromDto(userDto);
+      user.password = bcrypt.hashSync(userDto.password, 10);
+
+      let avatarPath = 'images/patients/patient_default.jpg';
+      if (createPatientDto.avatar) {
+        avatarPath = await this.imageService.saveImage(
+          'patients',
+          createPatientDto.avatar,
+        );
+      }
+
+      const patient = this.patientsRepository.create(createPatientDto);
+      patient.avatar = avatarPath;
+      patient.user = user;
+
+      const record = new Record();
+      record.patient = patient;
+
+      await queryRunner.manager.save<User>(user);
+      await queryRunner.manager.save<Patient>(patient);
+      await queryRunner.manager.save<Record>(record);
+      await queryRunner.commitTransaction();
+      return patient;
+    } catch {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException();
+    } finally {
+      await queryRunner.release();
     }
-
-    const patient = this.patientsRepository.create(createPatientDto);
-    patient.avatar = avatarPath;
-    patient.user = user;
-
-    const patientSaved = await this.patientsRepository.save(patient);
-    await this.recordService.create(patientSaved);
-    return patientSaved;
   }
 
   async update(id: number, updatePatientDto: UpdatePatientDto) {
@@ -145,7 +166,6 @@ export class PatientService {
     return this.patientsRepository.save(patient);
   }
 
-  // falta el endpoitn de update avatar en patient y physio
   async updateAvatar(
     id: number,
     updateAvatarPatientDto: UpdateAvatarPatientDto,

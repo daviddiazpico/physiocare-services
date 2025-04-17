@@ -1,9 +1,12 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { UserDto } from './dto/user.dto';
+import { Repository } from 'typeorm';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -12,7 +15,7 @@ export class UserService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  async #checkIfUsernameExists(username: string) {
+  async checkIfUsernameExists(username: string) {
     const user = await this.usersRepository.findOneBy({ username });
     if (user) {
       throw new BadRequestException(
@@ -29,13 +32,5 @@ export class UserService {
       }
     }
     throw new UnauthorizedException('Invalid credentials');
-  }
-
-  async create(userDto: UserDto): Promise<User> {
-    await this.#checkIfUsernameExists(userDto.username);
-
-    const user = this.usersRepository.create(userDto);
-    user.password = await bcrypt.hash(user.password, 10);
-    return this.usersRepository.save(user);
   }
 }

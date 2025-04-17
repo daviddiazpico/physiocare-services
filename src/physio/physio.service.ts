@@ -1,13 +1,16 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { ImageService } from 'src/shared/services/image.service';
 import { UserDto } from 'src/user/dto/user.dto';
+import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreatePhysioDto } from './dto/create-physio.dto';
 import { UpdateAvatarPhysioDto } from './dto/update-avatar-physio.dto';
 import { UpdatePhysioDto } from './dto/update-physio.dto';
@@ -20,6 +23,7 @@ export class PhysioService {
     private readonly physioRepository: Repository<Physio>,
     private readonly userService: UserService,
     private readonly imageService: ImageService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async #checkIfPhysioExists(id: number): Promise<Physio> {
@@ -83,23 +87,40 @@ export class PhysioService {
     createPhysioDto: CreatePhysioDto,
     userDto: UserDto,
   ): Promise<Physio> {
+    await this.userService.checkIfUsernameExists(userDto.username);
     await this.#checkIfLicenseNumberExists(createPhysioDto.licenseNumber);
     await this.#checkIfEmailExists(createPhysioDto.email);
-    const user = await this.userService.create(userDto);
 
-    let avatarPath = 'images/physios/patient_default.jpg';
-    if (createPhysioDto.avatar) {
-      avatarPath = await this.imageService.saveImage(
-        'physios',
-        createPhysioDto.avatar,
-      );
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const user = User.fromDto(userDto);
+      user.password = bcrypt.hashSync(userDto.password, 10);
+
+      let avatarPath = 'images/physios/patient_default.jpg';
+      if (createPhysioDto.avatar) {
+        avatarPath = await this.imageService.saveImage(
+          'physios',
+          createPhysioDto.avatar,
+        );
+      }
+
+      const physio = this.physioRepository.create(createPhysioDto);
+      physio.avatar = avatarPath;
+      physio.user = user;
+
+      await queryRunner.manager.save<User>(user);
+      await queryRunner.manager.save<Physio>(physio);
+      await queryRunner.commitTransaction();
+      return physio;
+    } catch {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException();
+    } finally {
+      await queryRunner.release();
     }
-
-    const physio = this.physioRepository.create(createPhysioDto);
-    physio.avatar = avatarPath;
-    physio.user = user;
-
-    return this.physioRepository.save(physio);
   }
 
   async update(id: number, updatePhysioDto: UpdatePhysioDto): Promise<Physio> {
@@ -116,7 +137,6 @@ export class PhysioService {
     return this.physioRepository.save(physio);
   }
 
-  // falta el endpoitn de update avatar en patient y physio
   async updateAvatar(
     id: number,
     updateAvatarPhysioDto: UpdateAvatarPhysioDto,

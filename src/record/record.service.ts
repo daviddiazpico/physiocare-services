@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Patient } from 'src/patient/entities/patient.entity';
 import { Repository } from 'typeorm';
 import { UpdateRecordDto } from './dto/update-record.dto';
 import { Record } from './entities/record.entity';
@@ -32,12 +31,6 @@ export class RecordService {
 
   findOne(id: number): Promise<Record> {
     return this.checkIfRecordExists(id);
-  }
-
-  async create(patient: Patient): Promise<void> {
-    const record = new Record();
-    record.patient = patient;
-    await this.recordRepository.save(record);
   }
 
   async update(id: number, updateRecordDto: UpdateRecordDto): Promise<Record> {
