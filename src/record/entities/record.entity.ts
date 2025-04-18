@@ -1,6 +1,13 @@
 import { Appointment } from 'src/appointment/entities/appointment.entity';
 import { Patient } from 'src/patient/entities/patient.entity';
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({ name: 'records' })
 export class Record {
@@ -14,6 +21,9 @@ export class Record {
   @JoinColumn()
   patient: Patient;
 
-  @OneToMany(() => Appointment, (appointment) => appointment.record, { nullable: true })
-  appointments: Appointment[];
+  @OneToMany(() => Appointment, (appointment) => appointment.record, {
+    nullable: true,
+    lazy: true,
+  })
+  appointments: Promise<Appointment[]>;
 }

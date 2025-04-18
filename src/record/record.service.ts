@@ -1,4 +1,9 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateRecordDto } from './dto/update-record.dto';
@@ -38,8 +43,14 @@ export class RecordService {
   }
 
   async findRecordAppointments(id: number): Promise<Appointment[]> {
-    const record = await this.findOne(id);
-    return this.appointmentService.findAppointmentsByRecord(record);
+    const appointments = await (await this.findOne(id)).appointments;
+    if (appointments.length === 0) {
+      throw new NotFoundException(
+        'This record does not have any appointment associated',
+      );
+    }
+
+    return appointments;
   }
 
   async update(id: number, updateRecordDto: UpdateRecordDto): Promise<Record> {

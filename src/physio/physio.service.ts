@@ -90,8 +90,14 @@ export class PhysioService {
   }
 
   async findPhysioAppointments(id: number): Promise<Appointment[]> {
-    const physio = await this.findOne(id);
-    return this.appointmentService.findAppointmentsByPhysio(physio);
+    const appointments = await (await this.findOne(id)).appointments;
+    if (appointments.length === 0) {
+      throw new NotFoundException(
+        'This physio does not have any appointment associated',
+      );
+    }
+
+    return appointments;
   }
 
   /**

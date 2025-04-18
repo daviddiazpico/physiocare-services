@@ -16,6 +16,7 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdateAvatarPatientDto } from './dto/update-avatar-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
 
 @Injectable()
 export class PatientService {
@@ -99,6 +100,17 @@ export class PatientService {
    */
   async findOneByUser(user: User): Promise<Patient> {
     return (await this.patientsRepository.findOneBy({ user }))!;
+  }
+
+  async findPatientAppointments(id: number): Promise<Appointment[]> {
+    const appointments = await (await this.findOne(id)).appointments;
+    if (appointments.length === 0) {
+      throw new NotFoundException(
+        'This patient does not have any appointment associated',
+      );
+    }
+
+    return appointments;
   }
 
   async create(

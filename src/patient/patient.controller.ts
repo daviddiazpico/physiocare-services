@@ -21,14 +21,13 @@ import { UpdateAvatarPatientDto } from './dto/update-avatar-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
 import { PatientService } from './patient.service';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
 
 @Controller('patients')
 @UseGuards(AuthGuard)
 // @UseInterceptors(ImageInterceptor) mirar donde poner si en tdo el controller o endpoints especificos
 export class PatientController {
-  constructor(
-    private readonly patientService: PatientService,
-  ) {}
+  constructor(private readonly patientService: PatientService) {}
 
   @Get()
   findAll(): Promise<Patient[]> {
@@ -48,6 +47,12 @@ export class PatientController {
       );
     }
     return this.patientService.findBySurname(surname);
+  }
+
+  @Get(':id/appointments')
+  findPatientAppointments(@Param('id') id: string): Promise<Appointment[]> {
+    checkIfIdIsValid(id);
+    return this.patientService.findPatientAppointments(+id);
   }
 
   @Get(':id')

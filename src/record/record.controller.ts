@@ -35,11 +35,6 @@ export class RecordController {
     return this.recordService.findOne(+id);
   }
 
-  // @Post()
-  // create(@Body() createRecordDto: CreateRecordDto) {
-  //   return this.recordService.create(createRecordDto);
-  // }
-
   @Put(':id')
   update(@Param('id') id: string, @Body() updateRecordDto: UpdateRecordDto) {
     checkIfIdIsValid(id);
