@@ -83,7 +83,6 @@ export class PatientService {
     if (patients.length === 0) {
       throw new NotFoundException('No patients found');
     }
-
     return patients;
   }
 

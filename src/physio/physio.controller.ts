@@ -12,8 +12,12 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
 import { PersonId } from 'src/shared/decorators/person-id.decorator';
+import { Roles } from 'src/shared/decorators/roles.decorator';
+import { Role } from 'src/shared/enums/role.enum';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
+import { RoleGuard } from 'src/shared/guards/role.guard';
 import { checkIfIdIsValid } from 'src/shared/utils/utils';
 import { UserDto } from 'src/user/dto/user.dto';
 import { CreatePhysioDto } from './dto/create-physio.dto';
@@ -21,24 +25,26 @@ import { UpdateAvatarPhysioDto } from './dto/update-avatar-physio.dto';
 import { UpdatePhysioDto } from './dto/update-physio.dto';
 import { Physio } from './entities/physio.entity';
 import { PhysioService } from './physio.service';
-import { Appointment } from 'src/appointment/entities/appointment.entity';
 
 @Controller('physios')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RoleGuard)
 export class PhysioController {
   constructor(private readonly physioService: PhysioService) {}
 
+  // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Get()
   findAll(): Promise<Physio[]> {
     return this.physioService.findAll();
   }
 
   @Get('me')
+  @Roles(Role.PHYSIO)
   findMe(@PersonId() physioId: number): Promise<Physio> {
     console.log(physioId);
     return this.physioService.findOne(physioId);
   }
 
+  // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Get('find')
   findBySpecialty(@Query('specialty') specialty: string): Promise<Physio[]> {
     if (!specialty) {
@@ -51,11 +57,13 @@ export class PhysioController {
   }
 
   @Get(':id/appointments')
+  @Roles(Role.ADMIN, Role.PHYSIO)
   findPhysioAppointments(@Param('id') id: string): Promise<Appointment[]> {
     checkIfIdIsValid(id);
     return this.physioService.findPhysioAppointments(+id);
   }
 
+  // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Physio> {
     checkIfIdIsValid(id);
@@ -63,6 +71,7 @@ export class PhysioController {
   }
 
   @Post()
+  @Roles(Role.ADMIN)
   @UsePipes(ValidationPipe)
   create(
     @Body('user') userDto: UserDto,
@@ -72,6 +81,7 @@ export class PhysioController {
   }
 
   @Put(':id')
+  @Roles(Role.ADMIN)
   @UsePipes(ValidationPipe)
   update(
     @Param('id') id: string,
@@ -82,6 +92,7 @@ export class PhysioController {
   }
 
   @Put(':id/avatar')
+  @Roles(Role.ADMIN)
   @UsePipes(ValidationPipe)
   updateAvatar(
     @Param('id') id: string,
@@ -92,6 +103,7 @@ export class PhysioController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN)
   async remove(@Param('id') id: string): Promise<void> {
     checkIfIdIsValid(id);
     await this.physioService.remove(+id);

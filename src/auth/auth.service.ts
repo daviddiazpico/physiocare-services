@@ -29,7 +29,7 @@ export class AuthService {
       {
         username: user.username,
         rol: user.rol,
-        id: personAssociated.id,
+        id: personAssociated? personAssociated.id:'',
       },
       { secret: process.env.JWT_SECRET_WORD },
     );

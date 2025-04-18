@@ -22,24 +22,30 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
 import { PatientService } from './patient.service';
 import { Appointment } from 'src/appointment/entities/appointment.entity';
+import { RoleGuard } from 'src/shared/guards/role.guard';
+import { Roles } from 'src/shared/decorators/roles.decorator';
+import { Role } from 'src/shared/enums/role.enum';
 
 @Controller('patients')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RoleGuard)
 // @UseInterceptors(ImageInterceptor) mirar donde poner si en tdo el controller o endpoints especificos
 export class PatientController {
   constructor(private readonly patientService: PatientService) {}
 
   @Get()
+  @Roles(Role.ADMIN, Role.PHYSIO)
   findAll(): Promise<Patient[]> {
     return this.patientService.findAll();
   }
 
   @Get('me')
+  @Roles(Role.PATIENT)
   findMe(@PersonId() patientId: number): Promise<Patient> {
     return this.patientService.findOne(patientId);
   }
 
   @Get('find')
+  @Roles(Role.ADMIN, Role.PHYSIO)
   findBySurname(@Query('surname') surname: string): Promise<Patient[]> {
     if (!surname) {
       throw new BadRequestException(
@@ -49,6 +55,7 @@ export class PatientController {
     return this.patientService.findBySurname(surname);
   }
 
+  // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Get(':id/appointments')
   findPatientAppointments(@Param('id') id: string): Promise<Appointment[]> {
     checkIfIdIsValid(id);
@@ -56,12 +63,14 @@ export class PatientController {
   }
 
   @Get(':id')
+  @Roles(Role.ADMIN, Role.PHYSIO)
   findOne(@Param('id') id: string): Promise<Patient> {
     checkIfIdIsValid(id);
     return this.patientService.findOne(+id);
   }
 
   @Post()
+  @Roles(Role.ADMIN, Role.PHYSIO)
   @UsePipes(ValidationPipe)
   create(
     @Body('user') userDto: UserDto,
@@ -71,6 +80,7 @@ export class PatientController {
   }
 
   @Put(':id')
+  @Roles(Role.ADMIN, Role.PHYSIO)
   @UsePipes(ValidationPipe)
   update(
     @Param('id') id: string,
@@ -81,6 +91,7 @@ export class PatientController {
   }
 
   @Put(':id/avatar')
+  @Roles(Role.ADMIN, Role.PHYSIO)
   @UsePipes(ValidationPipe)
   updateAvatar(
     @Param('id') id: string,
@@ -91,6 +102,7 @@ export class PatientController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN, Role.PHYSIO)
   async remove(@Param('id') id: string): Promise<void> {
     checkIfIdIsValid(id);
     await this.patientService.remove(+id);

@@ -10,6 +10,7 @@ import { UpdateRecordDto } from './dto/update-record.dto';
 import { Record } from './entities/record.entity';
 import { Appointment } from 'src/appointment/entities/appointment.entity';
 import { AppointmentService } from 'src/appointment/appointment.service';
+import { Patient } from 'src/patient/entities/patient.entity';
 
 @Injectable()
 export class RecordService {
@@ -35,6 +36,26 @@ export class RecordService {
       throw new NotFoundException("There aren't records in the system");
     }
 
+    return records;
+  }
+
+  async findByPatientSurname(surname: string): Promise<Record[]> {
+    const records = await this.recordRepository
+      .createQueryBuilder()
+      .where((qb) => {
+        const subquery = qb
+          .subQuery()
+          .select('id')
+          .from(Patient, 'patient')
+          .where('surname LIKE :surname', { surname: `%${surname}%` })
+          .getQuery();
+        return 'Record.patientId IN ' + subquery;
+      })
+      .getMany();
+
+    if (records.length === 0) {
+      throw new NotFoundException('No records found');
+    }
     return records;
   }
 
