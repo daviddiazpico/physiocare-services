@@ -131,7 +131,7 @@ export class PhysioService {
 
       const physio = this.physioRepository.create(createPhysioDto);
       physio.avatar = avatarPath;
-      physio.user = user;
+      physio.user = Promise.resolve(user);
 
       await queryRunner.manager.save<User>(user);
       await queryRunner.manager.save<Physio>(physio);
@@ -177,7 +177,21 @@ export class PhysioService {
   }
 
   async remove(id: number): Promise<void> {
-    await this.checkIfPhysioExists(id);
-    await this.physioRepository.delete(id);
+    const physio = await this.checkIfPhysioExists(id);
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      await queryRunner.manager.delete(Physio, physio.id);
+      await queryRunner.manager.delete(User, (await physio.user).id);
+      await queryRunner.commitTransaction();
+    } catch {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException();
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

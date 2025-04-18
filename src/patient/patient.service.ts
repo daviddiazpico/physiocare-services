@@ -2,7 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
@@ -127,7 +127,7 @@ export class PatientService {
 
       const patient = this.patientsRepository.create(createPatientDto);
       patient.avatar = avatarPath;
-      patient.user = user;
+      patient.user = Promise.resolve(user);
 
       const record = new Record();
       record.patient = patient;
@@ -180,7 +180,22 @@ export class PatientService {
   }
 
   async remove(id: number): Promise<void> {
-    await this.checkIfPatientExists(id);
-    await this.patientsRepository.delete(id);
+    const patient = await this.checkIfPatientExists(id);
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      await queryRunner.manager.delete(Record, { patient: patient });
+      await queryRunner.manager.delete(Patient, patient.id);
+      await queryRunner.manager.delete(User, (await patient.user).id);
+      await queryRunner.commitTransaction();
+    } catch {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException();
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

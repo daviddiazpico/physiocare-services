@@ -46,7 +46,7 @@ export class Patient {
   })
   appointments: Appointment[];
 
-  @OneToOne(() => User, { nullable: false })
+  @OneToOne(() => User, { nullable: false, lazy: true })
   @JoinColumn()
-  user: User;
+  user: Promise<User>;
 }
