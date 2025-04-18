@@ -9,6 +9,10 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RecordService } from 'src/record/record.service';
 import { Record } from 'src/record/entities/record.entity';
+import { PhysioService } from 'src/physio/physio.service';
+import { Physio } from 'src/physio/entities/physio.entity';
+import { AppointmentService } from 'src/appointment/appointment.service';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
 
 @Module({
   imports: [
@@ -18,9 +22,9 @@ import { Record } from 'src/record/entities/record.entity';
       secret: process.env.JWT_SECRET_WORD,
       signOptions: { expiresIn: '1h' },
     }),
-    TypeOrmModule.forFeature([Patient, Record]),
+    TypeOrmModule.forFeature([Patient, Physio, Record, Appointment]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PatientService, ImageService, RecordService],
+  providers: [AuthService, PatientService, PhysioService, ImageService, RecordService, AppointmentService],
 })
 export class AuthModule {}

@@ -86,8 +86,8 @@ export class PatientController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
+  async remove(@Param('id') id: string): Promise<void> {
     checkIfIdIsValid(id);
-    return this.patientService.remove(+id);
+    await this.patientService.remove(+id);
   }
 }

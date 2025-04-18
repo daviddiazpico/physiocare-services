@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -15,6 +17,8 @@ import { CreatePhysioDto } from './dto/create-physio.dto';
 import { UpdateAvatarPhysioDto } from './dto/update-avatar-physio.dto';
 import { UpdatePhysioDto } from './dto/update-physio.dto';
 import { Physio } from './entities/physio.entity';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
+import { AppointmentService } from 'src/appointment/appointment.service';
 
 @Injectable()
 export class PhysioService {
@@ -23,10 +27,12 @@ export class PhysioService {
     private readonly physioRepository: Repository<Physio>,
     private readonly userService: UserService,
     private readonly imageService: ImageService,
+    @Inject(forwardRef(() => AppointmentService))
+    private readonly appointmentService: AppointmentService,
     private readonly dataSource: DataSource,
   ) {}
 
-  async #checkIfPhysioExists(id: number): Promise<Physio> {
+  private async checkIfPhysioExists(id: number): Promise<Physio> {
     const physio = await this.physioRepository.findOneBy({ id });
     if (!physio) {
       throw new NotFoundException('Physio not found');
@@ -34,7 +40,7 @@ export class PhysioService {
     return physio;
   }
 
-  async #checkIfLicenseNumberExists(
+  private async checkIfLicenseNumberExists(
     licenseNumber: string,
     physioId = 0,
   ): Promise<void> {
@@ -46,7 +52,7 @@ export class PhysioService {
     }
   }
 
-  async #checkIfEmailExists(email: string, physioId = 0): Promise<void> {
+  private async checkIfEmailExists(email: string, physioId = 0): Promise<void> {
     const physio = await this.physioRepository.findOneBy({ email });
     if (physio && physio.id !== physioId) {
       throw new BadRequestException(
@@ -80,7 +86,23 @@ export class PhysioService {
   }
 
   findOne(id: number): Promise<Physio> {
-    return this.#checkIfPhysioExists(id);
+    return this.checkIfPhysioExists(id);
+  }
+
+  async findPhysioAppointments(id: number): Promise<Appointment[]> {
+    const physio = await this.findOne(id);
+    return this.appointmentService.findAppointmentsByPhysio(physio);
+  }
+
+  /**
+   * Method to search physio by User. I used it in the AuthService to get the physio
+   * associated with the user who logs in, to store their id in the token
+   *
+   * @param user The user associated to the physio
+   * @returns The physio associated with the user received
+   */
+  async findOneByUser(user: User): Promise<Physio> {
+    return (await this.physioRepository.findOneBy({ user }))!;
   }
 
   async create(
@@ -88,8 +110,8 @@ export class PhysioService {
     userDto: UserDto,
   ): Promise<Physio> {
     await this.userService.checkIfUsernameExists(userDto.username);
-    await this.#checkIfLicenseNumberExists(createPhysioDto.licenseNumber);
-    await this.#checkIfEmailExists(createPhysioDto.email);
+    await this.checkIfLicenseNumberExists(createPhysioDto.licenseNumber);
+    await this.checkIfEmailExists(createPhysioDto.email);
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -124,9 +146,9 @@ export class PhysioService {
   }
 
   async update(id: number, updatePhysioDto: UpdatePhysioDto): Promise<Physio> {
-    const physio = await this.#checkIfPhysioExists(id);
-    await this.#checkIfLicenseNumberExists(updatePhysioDto.licenseNumber, id);
-    await this.#checkIfEmailExists(updatePhysioDto.email, id);
+    const physio = await this.checkIfPhysioExists(id);
+    await this.checkIfLicenseNumberExists(updatePhysioDto.licenseNumber, id);
+    await this.checkIfEmailExists(updatePhysioDto.email, id);
 
     for (const property in updatePhysioDto) {
       if (property !== 'avatar') {
@@ -141,7 +163,7 @@ export class PhysioService {
     id: number,
     updateAvatarPhysioDto: UpdateAvatarPhysioDto,
   ): Promise<string> {
-    const patient = await this.#checkIfPhysioExists(id);
+    const patient = await this.checkIfPhysioExists(id);
 
     if (updateAvatarPhysioDto.avatar) {
       const avatarPath = await this.imageService.saveImage(
@@ -155,7 +177,7 @@ export class PhysioService {
   }
 
   async remove(id: number): Promise<void> {
-    await this.#checkIfPhysioExists(id);
+    await this.checkIfPhysioExists(id);
     await this.physioRepository.delete(id);
   }
 }

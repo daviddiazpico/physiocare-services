@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PatientService } from 'src/patient/patient.service';
+import { Physio } from 'src/physio/entities/physio.entity';
 import { PhysioService } from 'src/physio/physio.service';
+import { Record } from 'src/record/entities/record.entity';
 import { RecordService } from 'src/record/record.service';
 import { Repository } from 'typeorm';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { Appointment } from './entities/appointment.entity';
-import { PatientService } from 'src/patient/patient.service';
 
 @Injectable()
 export class AppointmentService {
@@ -23,6 +25,26 @@ export class AppointmentService {
       throw new NotFoundException('Appointment not found');
     }
     return record;
+  }
+
+  async findAppointmentsByPhysio(physio: Physio): Promise<Appointment[]> {
+    const appointments = await this.appointmentsRepository.findBy({ physio });
+    if (appointments.length === 0) {
+      throw new NotFoundException(
+        'This physio does not have any appointment associated',
+      );
+    }
+    return appointments;
+  }
+
+  async findAppointmentsByRecord(record: Record): Promise<Appointment[]> {
+    const appointments = await this.appointmentsRepository.findBy({ record });
+    if (appointments.length === 0) {
+      throw new NotFoundException(
+        'This record does not have any appointment associated',
+      );
+    }
+    return appointments;
   }
 
   async create(

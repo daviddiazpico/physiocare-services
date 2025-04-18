@@ -2,7 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
@@ -101,10 +101,6 @@ export class PatientService {
     return (await this.patientsRepository.findOneBy({ user }))!;
   }
 
-  // revisar la transacion aqui, ya que si peta conexion o algo asi
-  // podria guardarse un usuario y no el patient
-  // posible pruaba poner los campos lat lng sin default, para que sea null
-  // cuando se inserte, pero el user ya estara
   async create(
     createPatientDto: CreatePatientDto,
     userDto: UserDto,

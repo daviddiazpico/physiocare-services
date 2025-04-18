@@ -12,15 +12,16 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { CreatePhysioDto } from './dto/create-physio.dto';
-import { UpdatePhysioDto } from './dto/update-physio.dto';
-import { PhysioService } from './physio.service';
-import { AuthGuard } from 'src/shared/guards/auth.guard';
-import { UserDto } from 'src/user/dto/user.dto';
 import { PersonId } from 'src/shared/decorators/person-id.decorator';
-import { Physio } from './entities/physio.entity';
-import { UpdateAvatarPhysioDto } from './dto/update-avatar-physio.dto';
+import { AuthGuard } from 'src/shared/guards/auth.guard';
 import { checkIfIdIsValid } from 'src/shared/utils/utils';
+import { UserDto } from 'src/user/dto/user.dto';
+import { CreatePhysioDto } from './dto/create-physio.dto';
+import { UpdateAvatarPhysioDto } from './dto/update-avatar-physio.dto';
+import { UpdatePhysioDto } from './dto/update-physio.dto';
+import { Physio } from './entities/physio.entity';
+import { PhysioService } from './physio.service';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
 
 @Controller('physios')
 @UseGuards(AuthGuard)
@@ -34,6 +35,7 @@ export class PhysioController {
 
   @Get('me')
   findMe(@PersonId() physioId: number): Promise<Physio> {
+    console.log(physioId);
     return this.physioService.findOne(physioId);
   }
 
@@ -46,6 +48,12 @@ export class PhysioController {
     }
 
     return this.physioService.findBySpecialty(specialty);
+  }
+
+  @Get(':id/appointments')
+  findPhysioAppointments(@Param('id') id: string): Promise<Appointment[]> {
+    checkIfIdIsValid(id);
+    return this.physioService.findPhysioAppointments(+id);
   }
 
   @Get(':id')
@@ -84,8 +92,8 @@ export class PhysioController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
+  async remove(@Param('id') id: string): Promise<void> {
     checkIfIdIsValid(id);
-    return this.physioService.remove(+id);
+    await this.physioService.remove(+id);
   }
 }

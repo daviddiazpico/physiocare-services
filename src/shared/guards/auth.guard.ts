@@ -28,6 +28,8 @@ export class AuthGuard implements CanActivate {
     try {
       const payload = this.jwtService.verify(token, { secret: process.env.JWT_SECRET_WORD });
       request['userdata'] = payload;
+      // posible solucion para lo de los endpoints /me
+      // console.log(request.url);
     } catch {
       throw new UnauthorizedException();
     }

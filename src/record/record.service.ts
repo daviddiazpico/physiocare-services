@@ -1,14 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateRecordDto } from './dto/update-record.dto';
 import { Record } from './entities/record.entity';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
+import { AppointmentService } from 'src/appointment/appointment.service';
 
 @Injectable()
 export class RecordService {
   constructor(
     @InjectRepository(Record)
     private readonly recordRepository: Repository<Record>,
+    @Inject(forwardRef(() => AppointmentService))
+    private readonly appointmentService: AppointmentService,
   ) {}
 
   private async checkIfRecordExists(id: number): Promise<Record> {
@@ -31,6 +35,11 @@ export class RecordService {
 
   findOne(id: number): Promise<Record> {
     return this.checkIfRecordExists(id);
+  }
+
+  async findRecordAppointments(id: number): Promise<Appointment[]> {
+    const record = await this.findOne(id);
+    return this.appointmentService.findAppointmentsByRecord(record);
   }
 
   async update(id: number, updateRecordDto: UpdateRecordDto): Promise<Record> {

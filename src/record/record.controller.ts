@@ -1,15 +1,32 @@
-import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from 'src/shared/guards/auth.guard';
+import { checkIfIdIsValid } from 'src/shared/utils/utils';
 import { UpdateRecordDto } from './dto/update-record.dto';
 import { RecordService } from './record.service';
-import { checkIfIdIsValid } from 'src/shared/utils/utils';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
 
 @Controller('records')
+@UseGuards(AuthGuard)
 export class RecordController {
   constructor(private readonly recordService: RecordService) {}
 
   @Get()
   findAll() {
     return this.recordService.findAll();
+  }
+
+  @Get(':id/appointments')
+  findRecordAppointments(@Param('id') id: string): Promise<Appointment[]> {
+    checkIfIdIsValid(id);
+    return this.recordService.findRecordAppointments(+id);
   }
 
   @Get(':id')
@@ -30,8 +47,8 @@ export class RecordController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<void> {
     checkIfIdIsValid(id);
-    return this.recordService.remove(+id);
+    await this.recordService.remove(+id);
   }
 }
