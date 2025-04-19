@@ -4,16 +4,24 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Post,
   Put,
   Query,
   UseGuards,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
 import { PersonId } from 'src/shared/decorators/person-id.decorator';
+import { Roles } from 'src/shared/decorators/roles.decorator';
+import { Role } from 'src/shared/enums/role.enum';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
+import { RoleGuard } from 'src/shared/guards/role.guard';
+import { ImageListItemInterceptor } from 'src/shared/interceptors/image-list-item.interceptor';
+import { ImageSingleItemInterceptor } from 'src/shared/interceptors/image-single-item.interceptor';
 import { checkIfIdIsValid } from 'src/shared/utils/utils';
 import { UserDto } from 'src/user/dto/user.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
@@ -21,31 +29,29 @@ import { UpdateAvatarPatientDto } from './dto/update-avatar-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
 import { PatientService } from './patient.service';
-import { Appointment } from 'src/appointment/entities/appointment.entity';
-import { RoleGuard } from 'src/shared/guards/role.guard';
-import { Roles } from 'src/shared/decorators/roles.decorator';
-import { Role } from 'src/shared/enums/role.enum';
 
 @Controller('patients')
 @UseGuards(AuthGuard, RoleGuard)
-// @UseInterceptors(ImageInterceptor) mirar donde poner si en tdo el controller o endpoints especificos
 export class PatientController {
   constructor(private readonly patientService: PatientService) {}
 
   @Get()
   @Roles(Role.ADMIN, Role.PHYSIO)
+  @UseInterceptors(ImageListItemInterceptor)
   findAll(): Promise<Patient[]> {
     return this.patientService.findAll();
   }
 
   @Get('me')
   @Roles(Role.PATIENT)
+  @UseInterceptors(ImageSingleItemInterceptor)
   findMe(@PersonId() patientId: number): Promise<Patient> {
     return this.patientService.findOne(patientId);
   }
 
   @Get('find')
   @Roles(Role.ADMIN, Role.PHYSIO)
+  @UseInterceptors(ImageListItemInterceptor)
   findBySurname(@Query('surname') surname: string): Promise<Patient[]> {
     if (!surname) {
       throw new BadRequestException(
@@ -64,6 +70,7 @@ export class PatientController {
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.PHYSIO)
+  @UseInterceptors(ImageSingleItemInterceptor)
   findOne(@Param('id') id: string): Promise<Patient> {
     checkIfIdIsValid(id);
     return this.patientService.findOne(+id);
@@ -72,6 +79,7 @@ export class PatientController {
   @Post()
   @Roles(Role.ADMIN, Role.PHYSIO)
   @UsePipes(ValidationPipe)
+  @UseInterceptors(ImageSingleItemInterceptor)
   create(
     @Body('user') userDto: UserDto,
     @Body('patient') createPatientDto: CreatePatientDto,
@@ -82,6 +90,7 @@ export class PatientController {
   @Put(':id')
   @Roles(Role.ADMIN, Role.PHYSIO)
   @UsePipes(ValidationPipe)
+  @UseInterceptors(ImageSingleItemInterceptor)
   update(
     @Param('id') id: string,
     @Body() updatePatientDto: UpdatePatientDto,
@@ -103,6 +112,7 @@ export class PatientController {
 
   @Delete(':id')
   @Roles(Role.ADMIN, Role.PHYSIO)
+  @HttpCode(204)
   async remove(@Param('id') id: string): Promise<void> {
     checkIfIdIsValid(id);
     await this.patientService.remove(+id);

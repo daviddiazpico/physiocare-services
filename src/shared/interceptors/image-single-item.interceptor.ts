@@ -9,7 +9,7 @@ import { Patient } from 'src/patient/entities/patient.entity';
 import { Physio } from 'src/physio/entities/physio.entity';
 
 @Injectable()
-export class ImageInterceptor implements NestInterceptor {
+export class ImageSingleItemInterceptor implements NestInterceptor {
   intercept(
     context: ExecutionContext,
     next: CallHandler,

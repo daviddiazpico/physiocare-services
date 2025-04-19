@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, Param, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { checkIfIdIsValid } from 'src/shared/utils/utils';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
@@ -32,6 +32,7 @@ export class AppointmentController {
 
   @Delete(':id')
   @Roles(Role.ADMIN, Role.PHYSIO)
+  @HttpCode(204)
   async delete(@Param('id') id: string): Promise<void> {
     checkIfIdIsValid(id);
     await this.appointmentService.delete(+id);

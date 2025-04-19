@@ -4,11 +4,13 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Post,
   Put,
   Query,
   UseGuards,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -18,6 +20,8 @@ import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
 import { RoleGuard } from 'src/shared/guards/role.guard';
+import { ImageListItemInterceptor } from 'src/shared/interceptors/image-list-item.interceptor';
+import { ImageSingleItemInterceptor } from 'src/shared/interceptors/image-single-item.interceptor';
 import { checkIfIdIsValid } from 'src/shared/utils/utils';
 import { UserDto } from 'src/user/dto/user.dto';
 import { CreatePhysioDto } from './dto/create-physio.dto';
@@ -33,12 +37,14 @@ export class PhysioController {
 
   // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Get()
+  @UseInterceptors(ImageListItemInterceptor)
   findAll(): Promise<Physio[]> {
     return this.physioService.findAll();
   }
 
   @Get('me')
   @Roles(Role.PHYSIO)
+  @UseInterceptors(ImageSingleItemInterceptor)
   findMe(@PersonId() physioId: number): Promise<Physio> {
     console.log(physioId);
     return this.physioService.findOne(physioId);
@@ -46,6 +52,7 @@ export class PhysioController {
 
   // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Get('find')
+  @UseInterceptors(ImageListItemInterceptor)
   findBySpecialty(@Query('specialty') specialty: string): Promise<Physio[]> {
     if (!specialty) {
       throw new BadRequestException(
@@ -65,6 +72,7 @@ export class PhysioController {
 
   // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Get(':id')
+  @UseInterceptors(ImageSingleItemInterceptor)
   findOne(@Param('id') id: string): Promise<Physio> {
     checkIfIdIsValid(id);
     return this.physioService.findOne(+id);
@@ -73,6 +81,7 @@ export class PhysioController {
   @Post()
   @Roles(Role.ADMIN)
   @UsePipes(ValidationPipe)
+  @UseInterceptors(ImageSingleItemInterceptor)
   create(
     @Body('user') userDto: UserDto,
     @Body('physio') createPhysioDto: CreatePhysioDto,
@@ -83,6 +92,7 @@ export class PhysioController {
   @Put(':id')
   @Roles(Role.ADMIN)
   @UsePipes(ValidationPipe)
+  @UseInterceptors(ImageSingleItemInterceptor)
   update(
     @Param('id') id: string,
     @Body() updatePhysioDto: UpdatePhysioDto,
@@ -104,6 +114,7 @@ export class PhysioController {
 
   @Delete(':id')
   @Roles(Role.ADMIN)
+  @HttpCode(204)
   async remove(@Param('id') id: string): Promise<void> {
     checkIfIdIsValid(id);
     await this.physioService.remove(+id);
