@@ -25,7 +25,6 @@ export class Appointment {
 
   @ManyToOne(() => Patient, (patient) => patient.appointments, {
     nullable: false,
-    lazy: true,
   })
   patient: Patient;
 

@@ -1,13 +1,12 @@
 import {
   BadRequestException,
-  forwardRef,
-  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
 import { ImageService } from 'src/shared/services/image.service';
 import { UserDto } from 'src/user/dto/user.dto';
 import { User } from 'src/user/entities/user.entity';
@@ -17,8 +16,6 @@ import { CreatePhysioDto } from './dto/create-physio.dto';
 import { UpdateAvatarPhysioDto } from './dto/update-avatar-physio.dto';
 import { UpdatePhysioDto } from './dto/update-physio.dto';
 import { Physio } from './entities/physio.entity';
-import { Appointment } from 'src/appointment/entities/appointment.entity';
-import { AppointmentService } from 'src/appointment/appointment.service';
 
 @Injectable()
 export class PhysioService {
@@ -27,8 +24,6 @@ export class PhysioService {
     private readonly physioRepository: Repository<Physio>,
     private readonly userService: UserService,
     private readonly imageService: ImageService,
-    @Inject(forwardRef(() => AppointmentService))
-    private readonly appointmentService: AppointmentService,
     private readonly dataSource: DataSource,
   ) {}
 

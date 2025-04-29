@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Put,
   Query,
@@ -18,6 +19,7 @@ import { checkIfIdIsValid } from 'src/shared/utils/utils';
 import { UpdateRecordDto } from './dto/update-record.dto';
 import { RecordService } from './record.service';
 import { Record } from './entities/record.entity';
+import { DetailRecordDto } from './dto/detail-record.dto';
 
 @Controller('records')
 @UseGuards(AuthGuard, RoleGuard)
@@ -26,7 +28,7 @@ export class RecordController {
 
   @Get()
   @Roles(Role.ADMIN, Role.PHYSIO)
-  findAll() {
+  findAll(): Promise<Record[]> {
     return this.recordService.findAll();
   }
 
@@ -50,9 +52,10 @@ export class RecordController {
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.PHYSIO)
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<DetailRecordDto> {
     checkIfIdIsValid(id);
-    return this.recordService.findOne(+id);
+    const record = await this.recordService.findOne(+id);
+    return { ...record, appointments: await record.appointments };
   }
 
   @Put(':id')
@@ -64,6 +67,7 @@ export class RecordController {
 
   @Delete(':id')
   @Roles(Role.ADMIN, Role.PHYSIO)
+  @HttpCode(204)
   async remove(@Param('id') id: string): Promise<void> {
     checkIfIdIsValid(id);
     await this.recordService.remove(+id);

@@ -29,6 +29,7 @@ import { UpdateAvatarPatientDto } from './dto/update-avatar-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
 import { PatientService } from './patient.service';
+import { DetailPatientDto } from './dto/detail-patient.dto';
 
 @Controller('patients')
 @UseGuards(AuthGuard, RoleGuard)
@@ -71,9 +72,10 @@ export class PatientController {
   @Get(':id')
   @Roles(Role.ADMIN, Role.PHYSIO)
   @UseInterceptors(ImageSingleItemInterceptor)
-  findOne(@Param('id') id: string): Promise<Patient> {
+  async findOne(@Param('id') id: string): Promise<DetailPatientDto> {
     checkIfIdIsValid(id);
-    return this.patientService.findOne(+id);
+    const patient = await this.patientService.findOne(+id);
+    return { ...patient, appointments: await patient.appointments };
   }
 
   @Post()

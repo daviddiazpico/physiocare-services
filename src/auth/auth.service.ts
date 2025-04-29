@@ -15,7 +15,10 @@ export class AuthService {
     private readonly physioService: PhysioService,
   ) {}
 
-  async login(username: string, password: string): Promise<string> {
+  async login(
+    username: string,
+    password: string,
+  ): Promise<{ token: string; rol: string }> {
     const user = await this.userService.findOne(username, password);
 
     let personAssociated!: Patient | Physio;
@@ -24,15 +27,15 @@ export class AuthService {
     } else if (user.rol === 'physio') {
       personAssociated = await this.physioService.findOneByUser(user);
     }
-    
+
     const token = this.jwtService.sign(
       {
         username: user.username,
         rol: user.rol,
-        id: personAssociated? personAssociated.id:'',
+        id: personAssociated ? personAssociated.id : '',
       },
       { secret: process.env.JWT_SECRET_WORD },
     );
-    return token;
+    return { token: token, rol: user.rol };
   }
 }

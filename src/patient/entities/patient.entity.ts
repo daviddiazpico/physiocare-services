@@ -43,11 +43,10 @@ export class Patient {
 
   @OneToMany(() => Appointment, (appointment) => appointment.patient, {
     nullable: false,
-    lazy: true,
   })
   appointments: Promise<Appointment[]>;
 
-  @OneToOne(() => User, { nullable: false, lazy: true })
+  @OneToOne(() => User, { nullable: false })
   @JoinColumn()
   user: Promise<User>;
 }

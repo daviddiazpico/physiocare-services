@@ -29,6 +29,7 @@ import { UpdateAvatarPhysioDto } from './dto/update-avatar-physio.dto';
 import { UpdatePhysioDto } from './dto/update-physio.dto';
 import { Physio } from './entities/physio.entity';
 import { PhysioService } from './physio.service';
+import { DetailPhysioDto } from './dto/detail-physio.dto';
 
 @Controller('physios')
 @UseGuards(AuthGuard, RoleGuard)
@@ -73,9 +74,10 @@ export class PhysioController {
   // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Get(':id')
   @UseInterceptors(ImageSingleItemInterceptor)
-  findOne(@Param('id') id: string): Promise<Physio> {
+  async findOne(@Param('id') id: string): Promise<DetailPhysioDto> {
     checkIfIdIsValid(id);
-    return this.physioService.findOne(+id);
+    const physio = await this.physioService.findOne(+id);
+    return { ...physio, appointments: await physio.appointments };
   }
 
   @Post()
