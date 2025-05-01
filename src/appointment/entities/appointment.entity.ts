@@ -25,10 +25,14 @@ export class Appointment {
 
   @ManyToOne(() => Patient, (patient) => patient.appointments, {
     nullable: false,
+    eager: true,
   })
   patient: Patient;
 
-  @ManyToOne(() => Physio, (physio) => physio.appointments, { nullable: false })
+  @ManyToOne(() => Physio, (physio) => physio.appointments, {
+    nullable: false,
+    eager: true,
+  })
   physio: Physio;
 
   @ManyToOne(() => Record, (record) => record, { nullable: true })

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, HttpCode, Param, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { checkIfIdIsValid } from 'src/shared/utils/utils';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
@@ -12,6 +12,13 @@ import { Role } from 'src/shared/enums/role.enum';
 @UseGuards(AuthGuard, RoleGuard)
 export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
+
+  // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
+  @Get(':id')
+  findOne(@Param('id') id: string): Promise<Appointment> {
+    checkIfIdIsValid(id);
+    return this.appointmentService.findOne(+id);
+  }
 
   // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Post()

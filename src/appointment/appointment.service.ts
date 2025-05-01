@@ -25,6 +25,10 @@ export class AppointmentService {
     return record;
   }
 
+  findOne(id: number): Promise<Appointment> {
+    return this.checkIfAppointmentExists(id);
+  }
+
   async create(
     createAppointmentDto: CreateAppointmentDto,
   ): Promise<Appointment> {
