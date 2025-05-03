@@ -1,24 +1,16 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
+import { Patient } from 'src/patient/entities/patient.entity';
 import { Repository } from 'typeorm';
 import { UpdateRecordDto } from './dto/update-record.dto';
 import { Record } from './entities/record.entity';
-import { Appointment } from 'src/appointment/entities/appointment.entity';
-import { AppointmentService } from 'src/appointment/appointment.service';
-import { Patient } from 'src/patient/entities/patient.entity';
 
 @Injectable()
 export class RecordService {
   constructor(
     @InjectRepository(Record)
     private readonly recordRepository: Repository<Record>,
-    @Inject(forwardRef(() => AppointmentService))
-    private readonly appointmentService: AppointmentService,
   ) {}
 
   private async checkIfRecordExists(id: number): Promise<Record> {
@@ -61,6 +53,18 @@ export class RecordService {
 
   findOne(id: number): Promise<Record> {
     return this.checkIfRecordExists(id);
+  }
+
+  async findOneByPatientId(patientId: number): Promise<Record> {
+    const record = await this.recordRepository
+      .createQueryBuilder()
+      .where('Record.patientId = :id', { id: patientId })
+      .getOne();
+
+    if (!record) {
+      throw new NotFoundException('Record not found');
+    }
+    return record;
   }
 
   async findRecordAppointments(id: number): Promise<Appointment[]> {

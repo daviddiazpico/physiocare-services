@@ -32,6 +32,7 @@ export class AppointmentController {
 
   @Put(':id/confirm')
   @Roles(Role.ADMIN, Role.PHYSIO)
+  @HttpCode(204)
   async confirmAppointment(@Param('id') id: string): Promise<void> {
     checkIfIdIsValid(id);
     await this.appointmentService.confirmAppointment(+id);

@@ -18,11 +18,11 @@ export class AppointmentService {
   ) {}
 
   private async checkIfAppointmentExists(id: number): Promise<Appointment> {
-    const record = await this.appointmentsRepository.findOneBy({ id });
-    if (!record) {
+    const appointment = await this.appointmentsRepository.findOneBy({ id });
+    if (!appointment) {
       throw new NotFoundException('Appointment not found');
     }
-    return record;
+    return appointment;
   }
 
   findOne(id: number): Promise<Appointment> {
@@ -48,12 +48,9 @@ export class AppointmentService {
   }
 
   async confirmAppointment(id: number): Promise<void> {
-    const appointment = await this.appointmentsRepository.findOneBy({ id });
-    if (!appointment) {
-      throw new NotFoundException('Appointment not found');
-    }
+    const appointment = await this.findOne(id);
 
-    const patientRecord = await this.recordService.findOne(
+    const patientRecord = await this.recordService.findOneByPatientId(
       appointment.patient.id,
     );
 
