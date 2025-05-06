@@ -46,9 +46,9 @@ export class PhysioController {
   @Get('me')
   @Roles(Role.PHYSIO)
   @UseInterceptors(ImageSingleItemInterceptor)
-  findMe(@PersonId() physioId: number): Promise<Physio> {
-    console.log(physioId);
-    return this.physioService.findOne(physioId);
+  async findMe(@PersonId() physioId: number): Promise<DetailPhysioDto> {
+    const physio = await this.physioService.findOne(physioId);
+    return { ...physio, appointments: await physio.appointments };
   }
 
   // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios

@@ -57,8 +57,10 @@ export class RecordService {
 
   async findOneByPatientId(patientId: number): Promise<Record> {
     const record = await this.recordRepository
-      .createQueryBuilder()
-      .where('Record.patientId = :id', { id: patientId })
+      .createQueryBuilder('r')
+      .leftJoinAndSelect('r.patient', 'patient')
+      .select(['r.id', 'r.medicalRecord', 'patient'])
+      .where('r.patientId = :id', { id: patientId })
       .getOne();
 
     if (!record) {

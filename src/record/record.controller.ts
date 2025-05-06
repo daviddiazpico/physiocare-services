@@ -20,6 +20,7 @@ import { UpdateRecordDto } from './dto/update-record.dto';
 import { RecordService } from './record.service';
 import { Record } from './entities/record.entity';
 import { DetailRecordDto } from './dto/detail-record.dto';
+import { PersonId } from 'src/shared/decorators/person-id.decorator';
 
 @Controller('records')
 @UseGuards(AuthGuard, RoleGuard)
@@ -41,6 +42,17 @@ export class RecordController {
       );
     }
     return this.recordService.findByPatientSurname(surname);
+  }
+
+  @Get('my')
+  @Roles(Role.PATIENT)
+  async findMyRecord(@PersonId() patientId: number): Promise<DetailRecordDto> {
+    const record = await this.recordService.findOneByPatientId(patientId);
+    return {
+      ...record,
+      patient: record.patient,
+      appointments: await record.appointments,
+    };
   }
 
   @Get(':id/appointments')

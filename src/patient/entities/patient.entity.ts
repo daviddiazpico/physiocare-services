@@ -1,4 +1,5 @@
 import { Appointment } from 'src/appointment/entities/appointment.entity';
+import { Record } from 'src/record/entities/record.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -45,6 +46,9 @@ export class Patient {
     nullable: false,
   })
   appointments: Promise<Appointment[]>;
+
+  @OneToOne(() => Record, (record) => record.patient)
+  record: Promise<Record>;
 
   @OneToOne(() => User, { nullable: false })
   @JoinColumn()

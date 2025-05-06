@@ -1,4 +1,5 @@
 import { Appointment } from 'src/appointment/entities/appointment.entity';
+import { Record } from 'src/record/entities/record.entity';
 
 export class DetailPatientDto {
   id: number;
@@ -12,4 +13,5 @@ export class DetailPatientDto {
   lat: number;
   lng: number;
   appointments: Appointment[];
+  record: Record;
 }

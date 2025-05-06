@@ -17,7 +17,10 @@ export class Record {
   @Column({ type: 'varchar', length: 1000, default: '' })
   medicalRecord: string;
 
-  @OneToOne(() => Patient, { nullable: false, eager: true })
+  @OneToOne(() => Patient, (patient) => patient.record, {
+    nullable: false,
+    eager: true,
+  })
   @JoinColumn()
   patient: Patient;
 

@@ -46,8 +46,13 @@ export class PatientController {
   @Get('me')
   @Roles(Role.PATIENT)
   @UseInterceptors(ImageSingleItemInterceptor)
-  findMe(@PersonId() patientId: number): Promise<Patient> {
-    return this.patientService.findOne(patientId);
+  async findMe(@PersonId() patientId: number): Promise<DetailPatientDto> {
+    const patient = await this.patientService.findOne(patientId);
+    return {
+      ...patient,
+      appointments: await patient.appointments,
+      record: await patient.record,
+    };
   }
 
   @Get('find')
@@ -75,7 +80,11 @@ export class PatientController {
   async findOne(@Param('id') id: string): Promise<DetailPatientDto> {
     checkIfIdIsValid(id);
     const patient = await this.patientService.findOne(+id);
-    return { ...patient, appointments: await patient.appointments };
+    return {
+      ...patient,
+      appointments: await patient.appointments,
+      record: await patient.record,
+    };
   }
 
   @Post()
