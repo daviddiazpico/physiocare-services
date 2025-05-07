@@ -33,15 +33,16 @@ export class RecordService {
 
   async findByPatientSurname(surname: string): Promise<Record[]> {
     const records = await this.recordRepository
-      .createQueryBuilder()
+      .createQueryBuilder('r')
+      .leftJoinAndSelect('r.patient', 'patient')
       .where((qb) => {
         const subquery = qb
           .subQuery()
           .select('id')
           .from(Patient, 'patient')
-          .where('surname LIKE :surname', { surname: `%${surname}%` })
+          .where('surname ILIKE :surname', { surname: `%${surname}%` })
           .getQuery();
-        return 'Record.patientId IN ' + subquery;
+        return 'r.patientId IN ' + subquery;
       })
       .getMany();
 
@@ -59,7 +60,6 @@ export class RecordService {
     const record = await this.recordRepository
       .createQueryBuilder('r')
       .leftJoinAndSelect('r.patient', 'patient')
-      .select(['r.id', 'r.medicalRecord', 'patient'])
       .where('r.patientId = :id', { id: patientId })
       .getOne();
 
