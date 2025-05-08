@@ -122,7 +122,7 @@ export class PhysioService {
       const user = User.fromDto(userDto);
       user.password = bcrypt.hashSync(userDto.password, 10);
 
-      let avatarPath = 'images/physios/patient_default.jpg';
+      let avatarPath = 'images/physios/physio_default.jpg';
       if (createPhysioDto.avatar) {
         avatarPath = await this.imageService.saveImage(
           'physios',
