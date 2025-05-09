@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { Appointment } from 'src/appointment/entities/appointment.entity';
 import { Record } from 'src/record/entities/record.entity';
 import { ImageService } from 'src/shared/services/image.service';
 import { UserDto } from 'src/user/dto/user.dto';
@@ -16,7 +17,6 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdateAvatarPatientDto } from './dto/update-avatar-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
-import { Appointment } from 'src/appointment/entities/appointment.entity';
 
 @Injectable()
 export class PatientService {
@@ -198,11 +198,15 @@ export class PatientService {
     await queryRunner.startTransaction();
 
     try {
+      for (const appointment of await patient.appointments) {
+        await queryRunner.manager.delete(Appointment, appointment.id)
+      }
       await queryRunner.manager.delete(Record, { patient: patient });
       await queryRunner.manager.delete(Patient, patient.id);
       await queryRunner.manager.delete(User, (await patient.user).id);
       await queryRunner.commitTransaction();
-    } catch {
+    } catch (e) {
+      console.log(e);
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException();
     } finally {

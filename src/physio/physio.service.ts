@@ -185,6 +185,9 @@ export class PhysioService {
     await queryRunner.startTransaction();
 
     try {
+      for (const appointment of await physio.appointments) {
+        await queryRunner.manager.delete(Appointment, appointment.id)
+      }
       await queryRunner.manager.delete(Physio, physio.id);
       await queryRunner.manager.delete(User, (await physio.user).id);
       await queryRunner.commitTransaction();
