@@ -6,6 +6,7 @@ import { RecordService } from 'src/record/record.service';
 import { Repository } from 'typeorm';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { Appointment } from './entities/appointment.entity';
+import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 
 @Injectable()
 export class AppointmentService {
@@ -45,6 +46,18 @@ export class AppointmentService {
     appointment.patient = patient;
 
     return await this.appointmentsRepository.save(appointment);
+  }
+
+  async update(id: number, updateAppointmentDto: UpdateAppointmentDto): Promise<Appointment> {
+    const appointment = await this.checkIfAppointmentExists(id);
+
+    for (const property in updateAppointmentDto) {
+      if (property != 'id') {
+        appointment[property] = updateAppointmentDto[property];
+      }
+    }
+
+    return this.appointmentsRepository.save(appointment);
   }
 
   async confirmAppointment(id: number): Promise<void> {

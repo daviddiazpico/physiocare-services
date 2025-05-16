@@ -7,6 +7,7 @@ import { AuthGuard } from 'src/shared/guards/auth.guard';
 import { RoleGuard } from 'src/shared/guards/role.guard';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
+import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 
 @Controller('appointments')
 @UseGuards(AuthGuard, RoleGuard)
@@ -28,6 +29,14 @@ export class AppointmentController {
   ): Promise<Appointment> {
     // revisar si ya esta corfirmado y avisar en caso de que si
     return await this.appointmentService.create(createAppointmentDto);
+  }
+
+  @Put(':id')
+  @UsePipes(ValidationPipe)
+  @Roles(Role.ADMIN, Role.PHYSIO)
+  update(@Param('id') id: string, @Body() updateAppointmentDto: UpdateAppointmentDto): Promise<Appointment> {
+    checkIfIdIsValid(id);
+    return this.appointmentService.update(+id, updateAppointmentDto)
   }
 
   @Put(':id/confirm')
