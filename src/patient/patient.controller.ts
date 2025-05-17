@@ -43,6 +43,22 @@ export class PatientController {
     return this.patientService.findAll();
   }
 
+  @Get('with-all-data')
+  @Roles(Role.ADMIN, Role.PHYSIO)
+  @UseInterceptors(ImageListItemInterceptor)
+  async findAllWithAllData(): Promise<DetailPatientDto[]> {
+    const patients = await this.patientService.findAll();
+    const patientsWithAllData: DetailPatientDto[] = [];
+    for (const p of patients) {
+      patientsWithAllData.push({
+        ...p,
+        appointments: await p.appointments,
+        record: await p.record,
+      });
+    }
+    return patientsWithAllData;
+  }
+
   @Get('me')
   @Roles(Role.PATIENT)
   @UseInterceptors(ImageSingleItemInterceptor)

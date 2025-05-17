@@ -43,6 +43,18 @@ export class PhysioController {
     return this.physioService.findAll();
   }
 
+  // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
+  @Get('with-all-data')
+  @UseInterceptors(ImageListItemInterceptor)
+  async findAllWithAllData(): Promise<DetailPhysioDto[]> {
+    const physios = await this.physioService.findAll();
+    const physiosWithAllData: DetailPhysioDto[] = [];
+    for (const p of physios) {
+      physiosWithAllData.push({ ...p, appointments: await p.appointments });
+    }
+    return physiosWithAllData;
+  }
+
   @Get('me')
   @Roles(Role.PHYSIO)
   @UseInterceptors(ImageSingleItemInterceptor)
