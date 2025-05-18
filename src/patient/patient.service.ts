@@ -77,7 +77,7 @@ export class PatientService {
   async findBySurname(surname: string): Promise<Patient[]> {
     const patients = await this.patientsRepository
       .createQueryBuilder()
-      .where('surname LIKE :surname', { surname: `%${surname}%` })
+      .where('surname ILIKE :surname', { surname: `%${surname}%` })
       .getMany();
 
     if (patients.length === 0) {

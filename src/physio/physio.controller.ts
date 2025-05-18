@@ -73,6 +73,21 @@ export class PhysioController {
       );
     }
 
+    if (
+      ![
+        'Sports',
+        'Neurological',
+        'Pediatric',
+        'Geriatric',
+        'Oncological',
+      ].includes(specialty)
+    ) {
+      throw new BadRequestException(
+        'Specialty parameter must have one of the following values ' +
+          '[Sports, Neurological, Pediatric, Geriatric, Oncological]',
+      );
+    }
+
     return this.physioService.findBySpecialty(specialty);
   }
 
