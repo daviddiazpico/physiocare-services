@@ -15,6 +15,15 @@ export class AuthService {
     private readonly physioService: PhysioService,
   ) {}
 
+  validate(token: string): boolean {
+    try {
+      this.jwtService.verify(token, { secret: process.env.JWT_SECRET_WORD });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async login(
     username: string,
     password: string,
