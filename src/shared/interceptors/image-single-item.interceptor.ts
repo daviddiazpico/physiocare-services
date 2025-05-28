@@ -5,17 +5,19 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { Patient } from 'src/patient/entities/patient.entity';
-import { Physio } from 'src/physio/entities/physio.entity';
 
 @Injectable()
 export class ImageSingleItemInterceptor implements NestInterceptor {
   intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Observable<Patient | Physio> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Observable<any> {
     return next.handle().pipe(
-      map((data: Patient | Physio) => {
+      map((data) => {
+        if (typeof data === 'string') {
+          return { avatar: process.env.BASE_PATH + data };
+        }
         return {
           ...data,
           avatar: process.env.BASE_PATH + data.avatar,
