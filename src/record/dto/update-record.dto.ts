@@ -1,7 +1,14 @@
-import { IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class UpdateRecordDto {
   @IsNumber({}, { message: 'ID must be a number' })
+  @IsOptional()
   id: number;
 
   @IsNotEmpty({ message: 'Medical record can not be empty' })
