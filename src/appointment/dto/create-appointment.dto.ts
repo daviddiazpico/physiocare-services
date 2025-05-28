@@ -4,8 +4,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  MaxLength,
-  MinLength,
+  MaxLength
 } from 'class-validator';
 
 export class CreateAppointmentDto {
@@ -14,9 +13,6 @@ export class CreateAppointmentDto {
   date: Date;
 
   @IsString({ message: 'Diagnosis must be a string' })
-  @MinLength(10, {
-    message: 'Diagnosis length must be greater or equals than 10 characters',
-  })
   @MaxLength(500, {
     message: 'Diagnosis length must be lower or equals than 500 characters',
   })
