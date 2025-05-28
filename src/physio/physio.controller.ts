@@ -30,6 +30,7 @@ import { UpdatePhysioDto } from './dto/update-physio.dto';
 import { Physio } from './entities/physio.entity';
 import { PhysioService } from './physio.service';
 import { DetailPhysioDto } from './dto/detail-physio.dto';
+import { MeAttributeInterceptor } from 'src/shared/interceptors/me-attribute.interceptor';
 
 @Controller('physios')
 @UseGuards(AuthGuard, RoleGuard)
@@ -57,7 +58,7 @@ export class PhysioController {
 
   @Get('me')
   @Roles(Role.PHYSIO)
-  @UseInterceptors(ImageSingleItemInterceptor)
+  @UseInterceptors(ImageSingleItemInterceptor, MeAttributeInterceptor)
   async findMe(@PersonId() physioId: number): Promise<DetailPhysioDto> {
     const physio = await this.physioService.findOne(physioId);
     return { ...physio, appointments: await physio.appointments };
@@ -100,7 +101,7 @@ export class PhysioController {
 
   // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Get(':id')
-  @UseInterceptors(ImageSingleItemInterceptor)
+  @UseInterceptors(ImageSingleItemInterceptor, MeAttributeInterceptor)
   async findOne(@Param('id') id: string): Promise<DetailPhysioDto> {
     checkIfIdIsValid(id);
     const physio = await this.physioService.findOne(+id);
@@ -133,6 +134,7 @@ export class PhysioController {
   @Put(':id/avatar')
   @Roles(Role.ADMIN, Role.PHYSIO)
   @UsePipes(ValidationPipe)
+  @UseInterceptors(ImageSingleItemInterceptor)
   updateAvatar(
     @Param('id') id: string,
     @Body() updateAvatarPhysioDto: UpdateAvatarPhysioDto,

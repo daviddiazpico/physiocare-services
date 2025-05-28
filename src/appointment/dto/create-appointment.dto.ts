@@ -28,7 +28,7 @@ export class CreateAppointmentDto {
 
   @IsString({ message: 'Observations must be a string' })
   @MaxLength(500, {
-    message: 'Diagnosis length must be lower or equals than 500 characters',
+    message: 'Observations length must be lower or equals than 500 characters',
   })
   @IsOptional()
   observations?: string;

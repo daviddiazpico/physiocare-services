@@ -30,6 +30,7 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
 import { PatientService } from './patient.service';
 import { DetailPatientDto } from './dto/detail-patient.dto';
+import { MeAttributeInterceptor } from 'src/shared/interceptors/me-attribute.interceptor';
 
 @Controller('patients')
 @UseGuards(AuthGuard, RoleGuard)
@@ -61,7 +62,7 @@ export class PatientController {
 
   @Get('me')
   @Roles(Role.PATIENT)
-  @UseInterceptors(ImageSingleItemInterceptor)
+  @UseInterceptors(ImageSingleItemInterceptor, MeAttributeInterceptor)
   async findMe(@PersonId() patientId: number): Promise<DetailPatientDto> {
     const patient = await this.patientService.findOne(patientId);
     return {
@@ -92,7 +93,7 @@ export class PatientController {
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.PHYSIO)
-  @UseInterceptors(ImageSingleItemInterceptor)
+  @UseInterceptors(ImageSingleItemInterceptor, MeAttributeInterceptor)
   async findOne(@Param('id') id: string): Promise<DetailPatientDto> {
     checkIfIdIsValid(id);
     const patient = await this.patientService.findOne(+id);
@@ -129,6 +130,7 @@ export class PatientController {
   // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Put(':id/avatar')
   @UsePipes(ValidationPipe)
+  @UseInterceptors(ImageSingleItemInterceptor)
   updateAvatar(
     @Param('id') id: string,
     @Body() updateAvatarPatientDto: UpdateAvatarPatientDto,

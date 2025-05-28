@@ -35,12 +35,6 @@ export class Physio {
   @Column({ type: 'varchar', length: 100 })
   avatar: string;
 
-  @Column({ type: 'numeric', default: 0 })
-  lat: number;
-
-  @Column({ type: 'numeric', default: 0 })
-  lng: number;
-
   @OneToMany(() => Appointment, (appointment) => appointment.physio, {
     nullable: false,
   })

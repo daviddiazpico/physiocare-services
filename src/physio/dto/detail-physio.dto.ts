@@ -8,7 +8,5 @@ export class DetailPhysioDto {
   licenseNumber: string;
   email: string;
   avatar: string;
-  lat: number;
-  lng: number;
   appointments: Appointment[];
 }
