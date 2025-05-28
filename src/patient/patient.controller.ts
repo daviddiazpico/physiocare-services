@@ -126,8 +126,8 @@ export class PatientController {
     return this.patientService.update(+id, updatePatientDto);
   }
 
+  // No pongo @Roles(), ya que a este endpoint pueden acceder todos los tipos de usuarios
   @Put(':id/avatar')
-  @Roles(Role.ADMIN, Role.PHYSIO)
   @UsePipes(ValidationPipe)
   updateAvatar(
     @Param('id') id: string,

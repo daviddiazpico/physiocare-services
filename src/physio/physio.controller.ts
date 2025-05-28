@@ -131,7 +131,7 @@ export class PhysioController {
   }
 
   @Put(':id/avatar')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.PHYSIO)
   @UsePipes(ValidationPipe)
   updateAvatar(
     @Param('id') id: string,
