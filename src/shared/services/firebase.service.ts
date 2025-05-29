@@ -17,8 +17,12 @@ export class FirebaseService {
 
     try {
       const response = await admin.messaging().send(message);
+      console.log("Se ha enviado");
       return response;
-    } catch {
+    } catch (e) {
+      console.log("Ha petado al enviar");
+      console.log(e);
+      console.log(e.message);
       return null;
     }
   }
