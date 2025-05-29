@@ -12,6 +12,7 @@ import { AppointmentController } from './appointment.controller';
 import { Record } from 'src/record/entities/record.entity';
 import { PatientService } from 'src/patient/patient.service';
 import { Patient } from 'src/patient/entities/patient.entity';
+import { FirebaseService } from 'src/shared/services/firebase.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Appointment, User, Patient, Physio, Record])],
@@ -23,6 +24,7 @@ import { Patient } from 'src/patient/entities/patient.entity';
     UserService,
     ImageService,
     RecordService,
+    FirebaseService
   ],
 })
 export class AppointmentModule {}

@@ -15,6 +15,7 @@ import { Record } from './record/entities/record.entity';
 import { RecordModule } from './record/record.module';
 import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
+import { FirebaseService } from './shared/services/firebase.service';
 
 @Module({
   imports: [
@@ -38,6 +39,6 @@ import { UserModule } from './user/user.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ImageService],
+  providers: [AppService, ImageService, FirebaseService],
 })
 export class AppModule {}

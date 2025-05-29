@@ -2,14 +2,18 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Post,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
+import { Token } from 'src/shared/decorators/token.decorator';
+import { Username } from 'src/shared/decorators/username.decorator';
+import { AuthGuard } from 'src/shared/guards/auth.guard';
 import { AuthService } from './auth.service';
 import { UserLogin } from './interfaces/user-login.interface';
-import { Token } from 'src/shared/decorators/token.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -31,6 +35,13 @@ export class AuthController {
       throw new BadRequestException('Username and password can not be empty');
     }
 
-    return await this.authService.login(userLogin.username, userLogin.password);
+    return await this.authService.login(userLogin);
+  }
+
+  @Delete('logout/firebase')
+  @HttpCode(204)
+  @UseGuards(AuthGuard)
+  async deleteFirebaseToken(@Username() username: string): Promise<void> {
+    await this.authService.deleteFirebaseToken(username);
   }
 }

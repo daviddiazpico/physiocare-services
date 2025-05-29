@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { Appointment } from './entities/appointment.entity';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { FirebaseService } from 'src/shared/services/firebase.service';
 
 @Injectable()
 export class AppointmentService {
@@ -16,6 +17,7 @@ export class AppointmentService {
     private readonly physioService: PhysioService,
     private readonly patientService: PatientService,
     private readonly recordService: RecordService,
+    private readonly firebaseService: FirebaseService,
   ) {}
 
   private async checkIfAppointmentExists(id: number): Promise<Appointment> {
@@ -45,10 +47,25 @@ export class AppointmentService {
     appointment.physio = physio;
     appointment.patient = patient;
 
-    return await this.appointmentsRepository.save(appointment);
+    const appointmentSaved =
+      await this.appointmentsRepository.save(appointment);
+
+    const physioUser = await physio.user;
+    if (physioUser.firebaseToken) {
+      await this.firebaseService.sendMessage(
+        physioUser.firebaseToken,
+        `Tienes una nueva cita ${physio.name}`,
+        `El paciente ${patient.name} ${patient.surname} te ha pedido una cita ` +
+          `para el dia ${appointmentSaved.date.toISOString()}`,
+      );
+    }
+    return appointmentSaved;
   }
 
-  async update(id: number, updateAppointmentDto: UpdateAppointmentDto): Promise<Appointment> {
+  async update(
+    id: number,
+    updateAppointmentDto: UpdateAppointmentDto,
+  ): Promise<Appointment> {
     const appointment = await this.checkIfAppointmentExists(id);
 
     for (const property in updateAppointmentDto) {
@@ -70,7 +87,20 @@ export class AppointmentService {
     appointment.record = patientRecord;
     appointment.confirmed = true;
 
-    await this.appointmentsRepository.save(appointment);
+    const appointmentConfirmed =
+      await this.appointmentsRepository.save(appointment);
+
+    const patient = appointmentConfirmed.patient;
+    const physio = appointmentConfirmed.physio;
+    const patientUser = await patient.user;
+    if (patientUser.firebaseToken) {
+      await this.firebaseService.sendMessage(
+        patientUser.firebaseToken,
+        `Te han confirmado una cita ${patient.name}`,
+        `El fisio ${physio.name} ${physio.surname} te ha confirmado la cita ` +
+          `para el dia ${appointmentConfirmed.date.toISOString()}`,
+      );
+    }
   }
 
   async delete(id: number): Promise<void> {

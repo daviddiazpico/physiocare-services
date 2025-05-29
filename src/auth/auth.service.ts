@@ -5,6 +5,7 @@ import { PatientService } from 'src/patient/patient.service';
 import { Physio } from 'src/physio/entities/physio.entity';
 import { PhysioService } from 'src/physio/physio.service';
 import { UserService } from 'src/user/user.service';
+import { UserLogin } from './interfaces/user-login.interface';
 
 @Injectable()
 export class AuthService {
@@ -24,11 +25,16 @@ export class AuthService {
     }
   }
 
-  async login(
-    username: string,
-    password: string,
-  ): Promise<{ token: string; rol: string }> {
-    const user = await this.userService.findOne(username, password);
+  async login(userLogin: UserLogin): Promise<{ token: string; rol: string }> {
+    const user = await this.userService.findOne(
+      userLogin.username,
+      userLogin.password,
+    );
+
+    if (userLogin.firebaseToken) {
+      user.firebaseToken = userLogin.firebaseToken;
+      await this.userService.save(user);
+    }
 
     let personAssociated!: Patient | Physio;
     if (user.rol === 'patient') {
@@ -46,5 +52,9 @@ export class AuthService {
       { secret: process.env.JWT_SECRET_WORD },
     );
     return { token: token, rol: user.rol };
+  }
+
+  async deleteFirebaseToken(username: string): Promise<void> {
+    await this.userService.deleteFirebaseTokenByUsername(username);
   }
 }

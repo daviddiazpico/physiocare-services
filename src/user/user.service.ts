@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -32,5 +33,18 @@ export class UserService {
       }
     }
     throw new UnauthorizedException('Invalid credentials');
+  }
+
+  async save(user: User): Promise<User> {
+    return this.usersRepository.save(user);
+  }
+
+  async deleteFirebaseTokenByUsername(username: string): Promise<void> {
+    const user = await this.usersRepository.findOneBy({ username });
+    if (!user) {
+      throw new NotFoundException(`User with username '${username}' not found`);
+    }
+    user.firebaseToken = '';
+    await this.usersRepository.save(user);
   }
 }
