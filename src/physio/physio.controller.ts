@@ -88,8 +88,18 @@ export class PhysioController {
           '[Sports, Neurological, Pediatric, Geriatric, Oncological]',
       );
     }
-
     return this.physioService.findBySpecialty(specialty);
+  }
+
+  @Get('find/surname')
+  @UseInterceptors(ImageListItemInterceptor)
+  findBySurname(@Query('surname') surname: string): Promise<Physio[]> {
+    if (!surname) {
+      throw new BadRequestException(
+        'Surname parameter is required and can not be empty',
+      );
+    }
+    return this.physioService.findBySurname(surname);
   }
 
   @Get(':id/appointments')

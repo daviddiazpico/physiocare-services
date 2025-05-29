@@ -80,6 +80,18 @@ export class PhysioService {
     return physios;
   }
 
+  async findBySurname(surname: string): Promise<Physio[]> {
+      const physios = await this.physioRepository
+        .createQueryBuilder()
+        .where('surname ILIKE :surname', { surname: `%${surname}%` })
+        .getMany();
+  
+      if (physios.length === 0) {
+        throw new NotFoundException('No physios found');
+      }
+      return physios;
+    }
+
   findOne(id: number): Promise<Physio> {
     return this.checkIfPhysioExists(id);
   }
