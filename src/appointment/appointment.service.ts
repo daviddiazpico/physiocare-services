@@ -52,10 +52,11 @@ export class AppointmentService {
 
     const physioUser = await physio.user;
     if (physioUser.firebaseToken) {
+      const dateParsed = new Date(appointmentSaved.date);
       const dateStr =
-        `${appointmentSaved.date.getUTCDate()}/` +
-        `${appointmentSaved.date.getUTCMonth()}/` +
-        `${appointmentSaved.date.getFullYear()}`;
+        `${dateParsed.getUTCDate()}/` +
+        `${dateParsed.getUTCMonth()}/` +
+        `${dateParsed.getFullYear()}`;
       await this.firebaseService.sendMessage(
         physioUser.firebaseToken,
         `Tienes una nueva cita ${physio.name}`,
@@ -98,10 +99,11 @@ export class AppointmentService {
     const physio = appointmentConfirmed.physio;
     const patientUser = await patient.user;
     if (patientUser.firebaseToken) {
+      const dateParsed = new Date(appointmentConfirmed.date);
       const dateStr =
-        `${appointmentConfirmed.date.getUTCDate()}/` +
-        `${appointmentConfirmed.date.getUTCMonth()}/` +
-        `${appointmentConfirmed.date.getFullYear()}`;
+        `${dateParsed.getUTCDate()}/` +
+        `${dateParsed.getUTCMonth()}/` +
+        `${dateParsed.getFullYear()}`;
       await this.firebaseService.sendMessage(
         patientUser.firebaseToken,
         `Te han confirmado una cita ${patient.name}`,
