@@ -17,14 +17,14 @@ export class CreateAppointmentDto {
     message: 'Diagnosis length must be lower or equals than 500 characters',
   })
   @IsOptional()
-  diagnosis: string;
+  diagnosis?: string;
 
   @IsString({ message: 'Treatment must be a string' })
   @MaxLength(150, {
     message: 'Treatment length must be lower or equals then 150 characters',
   })
   @IsOptional()
-  treatment: string;
+  treatment?: string;
 
   @IsString({ message: 'Observations must be a string' })
   @MaxLength(500, {
