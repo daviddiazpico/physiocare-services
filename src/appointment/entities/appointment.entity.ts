@@ -11,10 +11,10 @@ export class Appointment {
   @Column({ type: 'date' })
   date: Date;
 
-  @Column({ type: 'varchar', length: 500 })
+  @Column({ type: 'varchar', length: 500, default: '' })
   diagnosis: string;
 
-  @Column({ type: 'varchar', length: 150 })
+  @Column({ type: 'varchar', length: 150, default: '' })
   treatment: string;
 
   @Column({ type: 'varchar', length: 500, default: '' })
